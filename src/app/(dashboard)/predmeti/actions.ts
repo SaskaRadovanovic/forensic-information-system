@@ -13,7 +13,7 @@ export type KreirajRezultat = { ok: true; id: number } | { ok: false; greska: st
 
 // ─── Redosled faza istrage ───────────────────────────────────────────────────
 
-const REDOSLED_FAZA = ["ISTRAGA", "PRIKUPLJANJE_DOKAZA", "SUDJENJE"] as const;
+const REDOSLED_FAZA = ["OTVOREN_SLUCAJ", "PRIKUPLJANJE_DOKAZA", "ANALIZA_DOKAZA", "DONOSENJE_ZAKLJUCKA", "ZATVOREN_SLUCAJ"] as const;
 
 // ─── Kreiranje novog predmeta ────────────────────────────────────────────────
 
@@ -199,14 +199,13 @@ export async function promeniPredmetFazu(predmetId: number): Promise<Rezultat> {
     // Nalazimo sledeću fazu po redosledu
     const trenutniIndeks = REDOSLED_FAZA.indexOf(predmet.faza as typeof REDOSLED_FAZA[number]);
     if (trenutniIndeks === -1 || trenutniIndeks === REDOSLED_FAZA.length - 1) {
-      return { ok: false, greska: "Predmet je već u poslednjoj fazi (Suđenje)." };
+      return { ok: false, greska: "Predmet je već u poslednjoj fazi." };
     }
 
     const sledecaFaza = REDOSLED_FAZA[trenutniIndeks + 1];
 
-    // Provera aktivnih analiza pre prelaska u fazu suđenja
-    // Koordinacija sa timom za analize (src/app/(dashboard)/analize/)
-    if (sledecaFaza === "SUDJENJE") {
+    // Provera aktivnih analiza pre prelaska u fazu donošenja zaključka
+    if (sledecaFaza === "DONOSENJE_ZAKLJUCKA") {
       const aktivneAnalize = await prisma.zahtevZaAnalizu.count({
         where: {
           predmetId,
@@ -216,7 +215,7 @@ export async function promeniPredmetFazu(predmetId: number): Promise<Rezultat> {
       if (aktivneAnalize > 0) {
         return {
           ok: false,
-          greska: `Predmet ima ${aktivneAnalize} aktivnih forenzičkih analiza. Završite ih pre prelaska na fazu suđenja.`,
+          greska: `Predmet ima ${aktivneAnalize} aktivnih forenzičkih analiza. Završite ih pre prelaska na fazu donošenja zaključka.`,
         };
       }
     }

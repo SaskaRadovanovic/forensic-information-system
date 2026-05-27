@@ -1,310 +1,266 @@
-// ─── Uvoz zavisnosti ─────────────────────────────────────────────────────────
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Calendar,
-  FileText,
-  Microscope,
-  Pencil,
-  FolderOpen,
-  Lock,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { ObrisiPredmetDugme } from "@/components/predmeti/ObrisiPredmetDugme";
 import { ZatvoriPredmetDugme } from "@/components/predmeti/ZatvoriPredmetDugme";
 import { PromeniPredmetFazuDugme } from "@/components/predmeti/PromeniPredmetFazuDugme";
+import { PredmetDetaljiTabs } from "@/components/predmeti/PredmetDetaljiTabs";
+import type { DokazTabItem, AnalizeTabItem, DokumentTabItem } from "@/components/predmeti/PredmetDetaljiTabs";
 
-// ─── Helper: srpski naziv faze ───────────────────────────────────────────────
+// ─── 5 faza predmeta ─────────────────────────────────────────────────────────
 
-function fazeLabel(faza: string): string {
-  const mapa: Record<string, string> = {
-    ISTRAGA: "Istraga",
-    PRIKUPLJANJE_DOKAZA: "Prikupljanje dokaza",
-    SUDJENJE: "Suđenje",
-  };
-  return mapa[faza] ?? faza;
-}
+const REDOSLED_FAZA = [
+  "OTVOREN_SLUCAJ",
+  "PRIKUPLJANJE_DOKAZA",
+  "ANALIZA_DOKAZA",
+  "DONOSENJE_ZAKLJUCKA",
+  "ZATVOREN_SLUCAJ",
+] as const;
 
-// ─── Helper: CSS klasa za badge faze ────────────────────────────────────────
+const FAZA_LABEL: Record<string, string> = {
+  OTVOREN_SLUCAJ:      "OTVOREN\nSLUČAJ",
+  PRIKUPLJANJE_DOKAZA: "PRIKUPLJANJE\nDOKAZA",
+  ANALIZA_DOKAZA:      "ANALIZA\nDOKAZA",
+  DONOSENJE_ZAKLJUCKA: "DONOŠENJE\nZAKLJUČKA",
+  ZATVOREN_SLUCAJ:     "ZATVOREN\nSLUČAJ",
+};
 
-function fazaBadgeKlasa(faza: string): string {
-  const mapa: Record<string, string> = {
-    ISTRAGA: "bg-fis-blue/10 text-fis-blue border-0",
-    PRIKUPLJANJE_DOKAZA: "bg-fis-yellow/10 text-fis-yellow border-0",
-    SUDJENJE: "bg-fis-orange/10 text-fis-orange border-0",
-  };
-  return mapa[faza] ?? "bg-fis-surface3 text-fis-text2 border-0";
-}
-
-// ─── Stranica sa detaljima predmeta ─────────────────────────────────────────
+const FAZA_BADGE: Record<string, string> = {
+  OTVOREN_SLUCAJ:      "fis-badge fis-badge-blue",
+  PRIKUPLJANJE_DOKAZA: "fis-badge fis-badge-yellow",
+  ANALIZA_DOKAZA:      "fis-badge fis-badge-orange",
+  DONOSENJE_ZAKLJUCKA: "fis-badge fis-badge-purple",
+  ZATVOREN_SLUCAJ:     "fis-badge fis-badge-green",
+};
 
 export default async function PredmetDetaljiPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // Provera autentifikacije
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
-  // Parsiramo ID iz URL parametra
   const { id } = await params;
   const predmetId = parseInt(id, 10);
   if (isNaN(predmetId)) notFound();
 
-  // ── Fetch predmeta sa vezanim podacima ────────────────────────────────────
   const predmet = await prisma.predmet.findUnique({
     where: { id: predmetId },
     include: {
-      // Poslednja 3 dokaza
       dokazi: {
         select: { id: true, sifraDokaza: true, naziv: true, tipDokaza: true, status: true },
         orderBy: { datumPrijema: "desc" },
-        take: 3,
       },
-      // Poslednja 3 dokumenta
       dokumenti: {
         select: { id: true, naziv: true, verzija: true, datumKreiranja: true },
         orderBy: { datumKreiranja: "desc" },
-        take: 3,
       },
-      _count: {
-        select: { dokazi: true, dokumenti: true, zahteviZaAnalizu: true },
+      zahteviZaAnalizu: {
+        select: {
+          id: true,
+          tipAnalize: true,
+          status: true,
+          rok: true,
+          dokaz: { select: { id: true, naziv: true, sifraDokaza: true } },
+          vestak: { select: { korisnik: { select: { ime: true, prezime: true } } } },
+        },
+        orderBy: { datumKreiranja: "desc" },
       },
+      _count: { select: { dokazi: true, dokumenti: true, zahteviZaAnalizu: true } },
     },
   });
 
   if (!predmet) notFound();
 
-  // ── Određivanje dozvola po ulozi ──────────────────────────────────────────
-  const uloga = session.user.uloga;
-  const mozeMenjati =
-    (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") &&
-    predmet.status !== "ZATVOREN";
-  const mozeZatvoriti =
-    (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") &&
-    predmet.status !== "ZATVOREN";
-  const mozeMenjatiFazu =
-    (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") &&
-    predmet.status !== "ZATVOREN";
-  const mozeObrisati = uloga === "ADMINISTRATOR";
+  const uloga        = session.user.uloga;
+  const zatvoren     = predmet.status === "ZATVOREN";
+  const mozeMenjati      = (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") && !zatvoren;
+  const mozeZatvoriti    = (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") && !zatvoren;
+  const mozeMenjatiFazu  = (uloga === "ADMINISTRATOR" || uloga === "ISTRAZITELJ") && !zatvoren;
+  const mozeObrisati     = uloga === "ADMINISTRATOR";
+
+  // ── Stanje svakog koraka u stepperu ──────────────────────────────────────
+  const fazaIdx = REDOSLED_FAZA.indexOf(predmet.faza as any);
+
+  function stepState(i: number): "done" | "active" | "future" {
+    if (zatvoren) return "done";
+    if (i < fazaIdx) return "done";
+    if (i === fazaIdx) return "active";
+    return "future";
+  }
+
+  function stepKlasa(i: number) {
+    return `fis-phase-step ${stepState(i)}`;
+  }
+
+  function connectorKlasa(i: number) {
+    return stepState(i) === "done" ? "fis-phase-connector done" : "fis-phase-connector";
+  }
+
+  // ── Serijalizacija za client komponentu ───────────────────────────────────
+  const dokaziTab: DokazTabItem[] = predmet.dokazi.map((d) => ({
+    id: d.id, sifraDokaza: d.sifraDokaza, naziv: d.naziv,
+    tipDokaza: d.tipDokaza, status: d.status,
+  }));
+
+  const analizeTab: AnalizeTabItem[] = predmet.zahteviZaAnalizu.map((z) => ({
+    id: z.id,
+    tipAnalize: z.tipAnalize,
+    status: z.status,
+    rokFormatiran: z.rok ? new Date(z.rok).toLocaleDateString("sr-RS") : null,
+    dokaz: { id: z.dokaz.id, naziv: z.dokaz.naziv, sifraDokaza: z.dokaz.sifraDokaza },
+    vestakIme: z.vestak ? `${z.vestak.korisnik.ime} ${z.vestak.korisnik.prezime}` : null,
+  }));
+
+  const dokumentiTab: DokumentTabItem[] = predmet.dokumenti.map((d) => ({
+    id: d.id, naziv: d.naziv, verzija: d.verzija,
+    datumFormatiran: new Date(d.datumKreiranja).toLocaleDateString("sr-RS"),
+  }));
+
+  const datumOtvaranja = new Date(predmet.datumOtvaranja).toLocaleDateString("sr-RS", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+  });
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div>
+      {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
+      <div className="fis-breadcrumb">
+        <Link href="/predmeti" className="fis-btn fis-btn-ghost fis-btn-sm">
+          ← Predmeti
+        </Link>
+      </div>
 
-      {/* ── Breadcrumb i akcijska dugmad ──────────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm">
-          <Link
-            href="/predmeti"
-            className="flex items-center gap-1 text-fis-text2 hover:text-fis-text1 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Predmeti
-          </Link>
-          <span className="text-fis-text3">/</span>
-          <span className="text-fis-text1 font-medium">#{predmet.id}</span>
-        </div>
+      {/* ── Eyebrow + Naslov ────────────────────────────────────────────── */}
+      <div className="page-eyebrow">Istraga</div>
+      <div className="page-title">{predmet.naziv}</div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Dugme za izmenu — dostupno samo za aktivne predmete */}
-          {mozeMenjati && (
-            <Link href={`/predmeti/${predmet.id}/izmeni`}>
-              <Button variant="outline" size="sm">
-                <Pencil className="h-4 w-4 mr-2" />
-                Izmeni
-              </Button>
-            </Link>
-          )}
-          {/* Dugme za promenu faze — nije prikazano ako smo u poslednjoj fazi */}
+      {/* ── Phase stepper — 5 faza ──────────────────────────────────────── */}
+      <div className="fis-phase-stepper" style={{ marginBottom: 0 }}>
+        {REDOSLED_FAZA.map((faza, i) => (
+          <div key={faza} style={{ display: "contents" }}>
+            <div className={stepKlasa(i)}>
+              <div className="fis-phase-circle">
+                {stepState(i) === "done" ? "✓" : `0${i + 1}`}
+              </div>
+              <div style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 9,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "1.5px",
+                color: stepState(i) === "active"
+                  ? "var(--color-fis-yellow)"
+                  : stepState(i) === "done"
+                  ? "var(--color-fis-green)"
+                  : "var(--color-fis-text3)",
+                textAlign: "center",
+                lineHeight: 1.4,
+                marginTop: 6,
+                whiteSpace: "pre-line",
+              }}>
+                {FAZA_LABEL[faza]}
+              </div>
+            </div>
+            {i < REDOSLED_FAZA.length - 1 && (
+              <div className={connectorKlasa(i)} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Akcijska traka ──────────────────────────────────────────────── */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "14px 0",
+        marginBottom: 20,
+        borderBottom: "1px solid var(--color-fis-border)",
+        flexWrap: "wrap",
+        gap: 8,
+      }}>
+        <div>
           {mozeMenjatiFazu && (
-            <PromeniPredmetFazuDugme
-              predmetId={predmet.id}
-              trenutnaFaza={predmet.faza}
-            />
+            <PromeniPredmetFazuDugme predmetId={predmet.id} trenutnaFaza={predmet.faza} />
           )}
-          {/* Dugme za zatvaranje predmeta */}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
           {mozeZatvoriti && (
             <ZatvoriPredmetDugme predmetId={predmet.id} naziv={predmet.naziv} />
-          )}
-          {/* Dugme za brisanje — samo administrator */}
-          {mozeObrisati && (
-            <ObrisiPredmetDugme predmetId={predmet.id} naziv={predmet.naziv} />
           )}
         </div>
       </div>
 
-      {/* ── Osnovna kartica predmeta ──────────────────────────────────────── */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-mono text-fis-text3">#{predmet.id}</p>
-              <CardTitle className="text-xl mt-1">{predmet.naziv}</CardTitle>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Badge statusa predmeta */}
-              {predmet.status === "ZATVOREN" ? (
-                <Badge className="bg-fis-red/10 text-fis-red border-0 text-xs flex items-center gap-1">
-                  <Lock className="h-3 w-3" />
-                  Zatvoren
-                </Badge>
-              ) : (
-                <Badge className="bg-fis-green/10 text-fis-green border-0 text-xs">
-                  Aktivan
-                </Badge>
-              )}
-              {/* Badge faze istrage */}
-              <Badge className={`text-xs ${fazaBadgeKlasa(predmet.faza)}`}>
-                {fazeLabel(predmet.faza)}
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-
-        <Separator />
-
-        <CardContent className="pt-6 space-y-4">
-          {/* Datum otvaranja predmeta */}
-          <div className="flex items-start gap-2">
-            <Calendar className="h-4 w-4 text-fis-text2 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-xs text-fis-text2 uppercase tracking-wide">Datum otvaranja</p>
-              <p className="text-sm font-medium text-fis-text1">
-                {new Date(predmet.datumOtvaranja).toLocaleDateString("sr-RS", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Opis predmeta — prikazujemo samo ako postoji */}
-          {predmet.opis && (
-            <>
-              <Separator />
-              <div>
-                <p className="text-xs text-fis-text2 uppercase tracking-wide mb-1">Opis</p>
-                <p className="text-sm text-fis-text1 leading-relaxed">{predmet.opis}</p>
-              </div>
-            </>
-          )}
-
-          {/* Statistika vezanih zapisa */}
-          <Separator />
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-fis-surface2">
-              <p className="text-2xl font-bold text-fis-text1">{predmet._count.dokazi}</p>
-              <p className="text-xs text-fis-text2 mt-1">Dokaz(a)</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-fis-surface2">
-              <p className="text-2xl font-bold text-fis-text1">{predmet._count.dokumenti}</p>
-              <p className="text-xs text-fis-text2 mt-1">Dokument(a)</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-fis-surface2">
-              <p className="text-2xl font-bold text-fis-text1">{predmet._count.zahteviZaAnalizu}</p>
-              <p className="text-xs text-fis-text2 mt-1">Analiz(a)</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Poslednji dokazi ──────────────────────────────────────────────── */}
-      {predmet.dokazi.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Microscope className="h-4 w-4" />
-                Dokazi ({predmet._count.dokazi})
-              </CardTitle>
-              <Link href={`/dokazi?predmetId=${predmet.id}`}>
-                <Button variant="ghost" size="sm" className="text-xs text-fis-text2">
-                  Svi dokazi →
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {predmet.dokazi.map((dokaz) => (
-                <div
-                  key={dokaz.id}
-                  className="flex items-center justify-between py-2 border-b border-fis-surface3 last:border-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-fis-text1">{dokaz.naziv}</p>
-                    <p className="text-xs font-mono text-fis-text3">{dokaz.sifraDokaza}</p>
-                  </div>
-                  <Link href={`/dokazi/${dokaz.id}`}>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-fis-text2">
-                      Detalji
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Poslednji dokumenti ───────────────────────────────────────────── */}
-      {predmet.dokumenti.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Dokumenti ({predmet._count.dokumenti})
-              </CardTitle>
-              <Link href={`/dokumentacija?predmetId=${predmet.id}`}>
-                <Button variant="ghost" size="sm" className="text-xs text-fis-text2">
-                  Svi dokumenti →
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {predmet.dokumenti.map((dok) => (
-                <div
-                  key={dok.id}
-                  className="flex items-center justify-between py-2 border-b border-fis-surface3 last:border-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-fis-text1">{dok.naziv}</p>
-                    <p className="text-xs text-fis-text3">
-                      v{dok.verzija} ·{" "}
-                      {new Date(dok.datumKreiranja).toLocaleDateString("sr-RS")}
-                    </p>
-                  </div>
-                  <Link href={`/dokumentacija/${dok.id}`}>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-fis-text2">
-                      Detalji
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Prazno stanje ako nema vezanih zapisa ────────────────────────── */}
-      {predmet._count.dokazi === 0 && predmet._count.dokumenti === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-fis-surface3 bg-fis-surface py-10 text-center">
-          <FolderOpen className="h-8 w-8 text-fis-text3 mb-3" />
-          <p className="text-sm text-fis-text2">Predmet nema vezanih dokaza ni dokumenata.</p>
+      {/* ── Podaci o predmetu ────────────────────────────────────────────── */}
+      <div className="fis-card" style={{ marginBottom: 20 }}>
+        <div className="fis-card-header">
+          <h3>Podaci o predmetu</h3>
+          {zatvoren
+            ? <span className="fis-badge fis-badge-gray">Zatvoren</span>
+            : <span className={FAZA_BADGE[predmet.faza]}>{FAZA_LABEL[predmet.faza]?.replace("\n", " ")}</span>
+          }
         </div>
-      )}
+        <div className="fis-card-body">
+          <div className="fis-form-grid">
+
+            <div className="fis-form-group full">
+              <label>Naziv</label>
+              <div className="fis-input" style={{ cursor: "default" }}>
+                {predmet.naziv}
+              </div>
+            </div>
+
+            <div className="fis-form-group">
+              <label>Datum otvaranja</label>
+              <div className="fis-input" style={{ cursor: "default" }}>
+                {datumOtvaranja}
+              </div>
+            </div>
+
+            <div className="fis-form-group">
+              <label>ID predmeta</label>
+              <div className="fis-input" style={{ cursor: "default" }}>
+                #{predmet.id}
+              </div>
+            </div>
+
+            {predmet.opis && (
+              <div className="fis-form-group full">
+                <label>Opis predmeta</label>
+                <div
+                  className="fis-input"
+                  style={{ cursor: "default", minHeight: 90, whiteSpace: "pre-wrap", lineHeight: 1.6 }}
+                >
+                  {predmet.opis}
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tabovi ───────────────────────────────────────────────────────── */}
+      <PredmetDetaljiTabs
+        dokazi={dokaziTab}
+        analize={analizeTab}
+        dokumenti={dokumentiTab}
+      />
+
+      {/* ── Dugmad ───────────────────────────────────────────────────────── */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 20 }}>
+        {mozeMenjati && (
+          <Link href={`/predmeti/${predmet.id}/izmeni`} className="fis-btn fis-btn-outline">
+            Izmeni
+          </Link>
+        )}
+        {mozeObrisati && (
+          <ObrisiPredmetDugme predmetId={predmet.id} naziv={predmet.naziv} />
+        )}
+      </div>
     </div>
   );
 }

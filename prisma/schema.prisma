@@ -84,9 +84,11 @@ model TehnicarZaDokaze {
 // ─── Enumi za predmete ────────────────────────────────────────────────────────
 
 enum FazaPredmeta {
-  ISTRAGA
+  OTVOREN_SLUCAJ
   PRIKUPLJANJE_DOKAZA
-  SUDJENJE
+  ANALIZA_DOKAZA
+  DONOSENJE_ZAKLJUCKA
+  ZATVOREN_SLUCAJ
 }
 
 enum StatusPredmeta {
@@ -101,7 +103,7 @@ model Predmet {
   naziv          String
   opis           String?        @db.Text
   status         StatusPredmeta @default(AKTIVAN)
-  faza           FazaPredmeta   @default(ISTRAGA)
+  faza           FazaPredmeta   @default(OTVOREN_SLUCAJ)
   datumOtvaranja DateTime       @default(now())
 
   dokumenti        Dokument[]
