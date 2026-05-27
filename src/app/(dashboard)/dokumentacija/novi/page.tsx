@@ -13,6 +13,7 @@ export const metadata = {
 export default async function NoviDokumentPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
+  if (session.user.uloga === "TEHNICAR") redirect("/dokazi");
 
   // Učitavamo sve predmete (SCRUM-36: mapiranje sa predmetom)
   const predmeti = await prisma.predmet.findMany({

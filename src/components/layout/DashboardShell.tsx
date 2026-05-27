@@ -25,14 +25,14 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: "Dokumentacija",
     items: [
-      { href: "/dokumentacija", label: "Dokumenti" },
+      { href: "/dokumentacija", label: "Dokumenti", ulogeKojeVide: ["ADMINISTRATOR", "ISTRAZITELJ", "VESTAK"] },
       { href: "/tagovi", label: "Tagovi", adminOnly: true },
     ],
   },
   {
     label: "Predmeti",
     items: [
-      { href: "/predmeti", label: "Predmeti" },
+      { href: "/predmeti", label: "Predmeti", ulogeKojeVide: ["ADMINISTRATOR", "ISTRAZITELJ", "VESTAK"] },
     ],
   },
   {

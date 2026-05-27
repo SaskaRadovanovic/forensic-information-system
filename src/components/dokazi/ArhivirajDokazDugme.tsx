@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Archive } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { arhivirajDokaz } from "@/app/(dashboard)/dokazi/[id]/actions";
 
 // ─── Dugme za arhiviranje dokaza (samo za administratora) ───────────────────
@@ -35,15 +34,28 @@ export function ArhivirajDokazDugme({ dokazId }: { dokazId: number }) {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
+      type="button"
       onClick={handleArhiviraj}
       disabled={isPending}
-      className="text-fis-red border-fis-red/30 hover:bg-fis-red/10 hover:text-fis-red"
+      style={{
+        fontFamily: "var(--font-mono), monospace",
+        fontSize: 11,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        padding: "7px 14px",
+        border: "1px solid rgba(239,68,68,0.3)",
+        background: "transparent",
+        color: "#ef4444",
+        cursor: isPending ? "not-allowed" : "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        opacity: isPending ? 0.5 : 1,
+      }}
     >
-      <Archive className="h-4 w-4 mr-2" />
+      <Archive className="h-3.5 w-3.5" />
       {isPending ? "Arhiviranje..." : "Arhiviraj"}
-    </Button>
+    </button>
   );
 }

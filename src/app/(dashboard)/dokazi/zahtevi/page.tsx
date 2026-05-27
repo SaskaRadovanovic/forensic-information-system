@@ -34,11 +34,13 @@ export default async function ZahteviPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-fis-text1">Zahtevi za dokaze</h1>
-        <p className="text-sm text-fis-text2 mt-1">
-          Obradite zahteve za predaju ili povraćaj dokaza
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-fis-text1">Zahtevi za dokaze</h1>
+          <p className="text-sm text-fis-text2 mt-1">
+            {zahtevi.length === 0 ? "Nema zahteva na čekanju" : `${zahtevi.length} zahtev${zahtevi.length === 1 ? "" : "a"} na čekanju`}
+          </p>
+        </div>
       </div>
 
       {/* Lista zahteva */}

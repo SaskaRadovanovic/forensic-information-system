@@ -6,12 +6,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/native-select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PoljaPoTipu } from "./PoljaPoTipu";
 import { kreirajDokaz } from "@/app/(dashboard)/dokazi/actions";
 import { izmeniDokaz } from "@/app/(dashboard)/dokazi/[id]/actions";
@@ -65,6 +59,34 @@ interface DokazFormaProps {
   mode: "create" | "edit";
   predmeti: Predmet[];
   pocetneVrednosti?: PocetneVrednosti;
+}
+
+// ─── Stil helperi ───────────────────────────────────────────────────────────
+
+function inputStil(disabled?: boolean): React.CSSProperties {
+  return {
+    width: "100%",
+    background: disabled ? "#141414" : "#181818",
+    border: "1px solid #2a2a2a",
+    color: disabled ? "#555555" : "#f0ede8",
+    fontFamily: "var(--font-mono), monospace",
+    fontSize: 13,
+    padding: "9px 12px",
+    outline: "none",
+    cursor: disabled ? "not-allowed" : "text",
+  };
+}
+
+function labelStil(): React.CSSProperties {
+  return {
+    display: "block",
+    fontFamily: "var(--font-mono), monospace",
+    fontSize: 10,
+    textTransform: "uppercase" as const,
+    letterSpacing: "1.5px",
+    color: "#555555",
+    marginBottom: 6,
+  };
 }
 
 // ─── Komponenta ─────────────────────────────────────────────────────────────
@@ -172,171 +194,158 @@ export function DokazForma({ mode, predmeti, pocetneVrednosti }: DokazFormaProps
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isEdit ? "Izmena dokaza" : "Novi dokaz"}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div style={{ border: "1px solid #2a2a2a", background: "#111111" }}>
+      {/* Header */}
+      <div style={{ padding: "20px 24px", borderBottom: "1px solid #2a2a2a" }}>
+        <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, textTransform: "uppercase", letterSpacing: "2px", color: "#555555", marginBottom: 4 }}>
+          {isEdit ? "Izmena dokaza" : "Novi dokaz"}
+        </p>
+        <h2 style={{ fontFamily: "var(--font-display), 'Bebas Neue', sans-serif", fontSize: 24, letterSpacing: 2, color: "#f0ede8", lineHeight: 1 }}>
+          {isEdit ? "Izmena podataka o dokazu" : "Evidentiraj novi dokaz"}
+        </h2>
+      </div>
 
-          {/* Prikaz greške sa servera ako postoji */}
-          {serverGreska && (
-            <div className="rounded-md bg-fis-red/10 border border-fis-red/30 px-4 py-3 text-sm text-fis-red">
-              {serverGreska}
-            </div>
-          )}
+      {/* Body */}
+      <form onSubmit={handleSubmit(onSubmit)} style={{ padding: "24px" }}>
 
-          {/* ── Zajednička polja ──────────────────────────────────────────── */}
+        {serverGreska && (
+          <div style={{ border: "1px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.08)", padding: "10px 14px", marginBottom: 20, fontFamily: "var(--font-mono), monospace", fontSize: 12, color: "#ef4444" }}>
+            {serverGreska}
+          </div>
+        )}
 
-          {/* Naziv dokaza */}
-          <div className="space-y-2">
-            <Label htmlFor="naziv">
-              Naziv dokaza <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="naziv"
+        {/* Grid: naziv + tip */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div>
+            <label style={labelStil()}>Naziv dokaza <span style={{ color: "#ef4444" }}>*</span></label>
+            <input
+              type="text"
               {...register("naziv")}
               placeholder="npr. Nož pronađen na licu mesta"
               disabled={loading}
+              style={inputStil(loading)}
             />
-            {errors.naziv && (
-              <p className="text-sm text-fis-red">{errors.naziv.message}</p>
-            )}
+            {errors.naziv && <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: "#ef4444", marginTop: 4 }}>{errors.naziv.message}</p>}
           </div>
 
-          {/* Tip dokaza — onemogućen pri izmeni */}
-          <div className="space-y-2">
-            <Label htmlFor="tipDokaza">
-              Tip dokaza <span className="text-red-500">*</span>
-            </Label>
-            <NativeSelect
-              id="tipDokaza"
+          <div>
+            <label style={labelStil()}>Tip dokaza <span style={{ color: "#ef4444" }}>*</span></label>
+            <select
               {...register("tipDokaza")}
               disabled={loading || isEdit}
+              style={{ ...inputStil(loading || isEdit), cursor: loading || isEdit ? "not-allowed" : "pointer" }}
             >
               <option value="">— Odaberi tip —</option>
               {TIPOVI_DOKAZA.map((tip) => (
-                <option key={tip.value} value={tip.value}>
-                  {tip.label}
-                </option>
+                <option key={tip.value} value={tip.value}>{tip.label}</option>
               ))}
-            </NativeSelect>
-            {errors.tipDokaza && (
-              <p className="text-sm text-fis-red">{errors.tipDokaza.message}</p>
-            )}
-            {/* Napomena korisniku da se tip ne može menjati */}
+            </select>
+            {errors.tipDokaza && <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: "#ef4444", marginTop: 4 }}>{errors.tipDokaza.message}</p>}
             {isEdit && (
-              <p className="text-xs text-fis-text3">Tip dokaza se ne može menjati nakon kreiranja.</p>
+              <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: "#555555", marginTop: 4 }}>Tip dokaza se ne može menjati nakon kreiranja.</p>
             )}
           </div>
+        </div>
 
-          {/* Predmet kome dokaz pripada */}
-          <div className="space-y-2">
-            <Label htmlFor="predmetId">
-              Predmet <span className="text-red-500">*</span>
-            </Label>
-            <NativeSelect
-              id="predmetId"
+        {/* Grid: predmet + datum prijema */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div>
+            <label style={labelStil()}>Predmet <span style={{ color: "#ef4444" }}>*</span></label>
+            <select
               {...register("predmetId")}
               disabled={loading}
+              style={{ ...inputStil(loading), cursor: loading ? "not-allowed" : "pointer" }}
             >
               <option value="">— Odaberi predmet —</option>
               {predmeti.map((p) => (
-                <option key={p.id} value={String(p.id)}>
-                  {p.naziv}
-                </option>
+                <option key={p.id} value={String(p.id)}>{p.naziv}</option>
               ))}
-            </NativeSelect>
-            {errors.predmetId && (
-              <p className="text-sm text-fis-red">{errors.predmetId.message}</p>
-            )}
+            </select>
+            {errors.predmetId && <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: "#ef4444", marginTop: 4 }}>{errors.predmetId.message}</p>}
           </div>
 
-          {/* Datum prijema dokaza */}
-          <div className="space-y-2">
-            <Label htmlFor="datumPrijema">
-              Datum prijema <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="datumPrijema"
-              type="date"
-              {...register("datumPrijema")}
-              disabled={loading}
-            />
-            {errors.datumPrijema && (
-              <p className="text-sm text-fis-red">{errors.datumPrijema.message}</p>
-            )}
+          <div>
+            <label style={labelStil()}>Datum prijema <span style={{ color: "#ef4444" }}>*</span></label>
+            <input type="date" {...register("datumPrijema")} disabled={loading} style={inputStil(loading)} />
+            {errors.datumPrijema && <p style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: "#ef4444", marginTop: 4 }}>{errors.datumPrijema.message}</p>}
+          </div>
+        </div>
+
+        {/* Grid: datum pronalaska + lokacija pronalaska */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div>
+            <label style={labelStil()}>Datum pronalaska</label>
+            <input type="date" {...register("datumPronalaska")} disabled={loading} style={inputStil(loading)} />
           </div>
 
-          {/* Datum pronalaska — opciono polje */}
-          <div className="space-y-2">
-            <Label htmlFor="datumPronalaska">Datum pronalaska (opciono)</Label>
-            <Input
-              id="datumPronalaska"
-              type="date"
-              {...register("datumPronalaska")}
-              disabled={loading}
-            />
-          </div>
-
-          {/* Lokacija pronalaska — opciono polje */}
-          <div className="space-y-2">
-            <Label htmlFor="lokacijaPronalaska">Lokacija pronalaska (opciono)</Label>
-            <Input
-              id="lokacijaPronalaska"
+          <div>
+            <label style={labelStil()}>Lokacija pronalaska</label>
+            <input
+              type="text"
               {...register("lokacijaPronalaska")}
               placeholder="npr. Ul. Knez Mihailova 15, Beograd"
               disabled={loading}
+              style={inputStil(loading)}
             />
           </div>
+        </div>
 
-          {/* Lokacija gde se dokaz čuva */}
-          <div className="space-y-2">
-            <Label htmlFor="lokacijaSkladistenja">Lokacija skladištenja</Label>
-            <Input
-              id="lokacijaSkladistenja"
-              {...register("lokacijaSkladistenja")}
-              placeholder="npr. Skladište A, polica 3"
-              disabled={loading}
-            />
-          </div>
-
-          {/* Opis dokaza */}
-          <div className="space-y-2">
-            <Label htmlFor="opis">Opis (opciono)</Label>
-            <Textarea
-              id="opis"
-              {...register("opis")}
-              placeholder="Kratki opis dokaza..."
-              rows={3}
-              disabled={loading}
-            />
-          </div>
-
-          {/* ── Specifična polja u zavisnosti od tipa dokaza ─────────────── */}
-          <PoljaPoTipu
-            tipDokaza={odabraniTip}
-            register={register}
+        {/* Lokacija skladištenja */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStil()}>Lokacija skladištenja</label>
+          <input
+            type="text"
+            {...register("lokacijaSkladistenja")}
+            placeholder="npr. Skladište A, polica 3"
             disabled={loading}
+            style={inputStil(loading)}
           />
+        </div>
 
-          {/* ── Dugmad za akcije ─────────────────────────────────────────── */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-fis-surface3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={loading}
-            >
-              Otkaži
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Čuvanje..." : "Sačuvaj"}
-            </Button>
-          </div>
+        {/* Opis */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStil()}>Opis</label>
+          <textarea
+            {...register("opis")}
+            placeholder="Kratki opis dokaza..."
+            rows={3}
+            disabled={loading}
+            style={{ ...inputStil(loading), resize: "vertical", minHeight: 70 }}
+          />
+        </div>
 
-        </form>
-      </CardContent>
-    </Card>
+        {/* Specifična polja po tipu */}
+        <PoljaPoTipu
+          tipDokaza={odabraniTip}
+          register={register}
+          disabled={loading}
+        />
+
+        {/* Dugmad */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 16, borderTop: "1px solid #2a2a2a", marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            disabled={loading}
+            style={{
+              fontFamily: "var(--font-mono), monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: 1,
+              padding: "9px 18px", border: "1px solid #3a3a3a", background: "transparent", color: "#999999", cursor: "pointer",
+            }}
+          >
+            Otkaži
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              fontFamily: "var(--font-mono), monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: 1,
+              padding: "9px 18px", border: "none", background: loading ? "#c9a015" : "#f5c518", color: "#000", cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Čuvanje..." : isEdit ? "Sačuvaj izmene" : "Evidentiraj dokaz"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

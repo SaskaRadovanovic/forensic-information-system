@@ -41,6 +41,7 @@ export default async function PredmetiPage({
 }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
+  if (session.user.uloga === "TEHNICAR") redirect("/dokazi");
 
   const params = await searchParams;
   const q = params.q?.trim();

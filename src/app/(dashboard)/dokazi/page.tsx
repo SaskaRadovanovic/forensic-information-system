@@ -5,7 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Plus, Microscope, Eye } from "lucide-react";
 import {
   Table,
@@ -35,14 +34,14 @@ interface SearchParams {
 
 function statusBadgeKlasa(status: string): string {
   const mapa: Record<string, string> = {
-    U_SKLADISTU: "bg-fis-green/10 text-fis-green border-0",
-    IZDATO_ZA_ANALIZU: "bg-fis-blue/10 text-fis-blue border-0",
-    VRACENO: "bg-fis-yellow/10 text-fis-yellow border-0",
-    ARHIVIRANO: "bg-fis-red/10 text-fis-red border-0",
-    KOMPROMITOVAN: "bg-fis-orange/10 text-fis-orange border-0",
-    PRIJEM: "bg-fis-surface3 text-fis-text2 border-0",
+    U_SKLADISTU: "text-fis-green border-fis-green/40",
+    IZDATO_ZA_ANALIZU: "text-fis-blue border-fis-blue/40",
+    VRACENO: "text-fis-yellow border-fis-yellow/40",
+    ARHIVIRANO: "text-fis-red border-fis-red/40",
+    KOMPROMITOVAN: "text-fis-orange border-fis-orange/40",
+    PRIJEM: "text-fis-text2 border-fis-border",
   };
-  return mapa[status] ?? "bg-fis-surface3 text-fis-text2 border-0";
+  return mapa[status] ?? "text-fis-text2 border-fis-border";
 }
 
 // ─── Helper: srpski naziv za status dokaza ───────────────────────────────────
@@ -63,13 +62,13 @@ function statusLabel(status: string): string {
 
 function tipBadgeKlasa(tip: string): string {
   const mapa: Record<string, string> = {
-    BIOLOSKI_TRAG: "bg-fis-green/10 text-fis-green border-0",
-    ORUZJE: "bg-fis-red/10 text-fis-red border-0",
-    DOKUMENT: "bg-fis-blue/10 text-fis-blue border-0",
-    ODECA: "bg-fis-yellow/10 text-fis-yellow border-0",
-    UZORAK: "bg-fis-orange/10 text-fis-orange border-0",
+    BIOLOSKI_TRAG: "text-fis-green border-fis-green/40",
+    ORUZJE: "text-fis-red border-fis-red/40",
+    DOKUMENT: "text-fis-blue border-fis-blue/40",
+    ODECA: "text-fis-yellow border-fis-yellow/40",
+    UZORAK: "text-fis-orange border-fis-orange/40",
   };
-  return mapa[tip] ?? "bg-fis-surface3 text-fis-text2 border-0";
+  return mapa[tip] ?? "text-fis-text2 border-fis-border";
 }
 
 // ─── Helper: srpski naziv za tip dokaza ──────────────────────────────────────
@@ -161,10 +160,26 @@ export default async function DokaziPage({
         <h1 className="text-2xl font-bold text-fis-text1">Dokazi</h1>
         {mozeKreirati && (
           <Link href="/dokazi/novi">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+            <button
+              style={{
+                fontFamily: "var(--font-mono), monospace",
+                fontSize: 11,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                padding: "9px 18px",
+                border: "none",
+                background: "#f5c518",
+                color: "#000",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontWeight: 600,
+              }}
+            >
+              <Plus className="h-4 w-4" />
               Novi dokaz
-            </Button>
+            </button>
           </Link>
         )}
       </div>
@@ -282,18 +297,16 @@ export default async function DokaziPage({
                     {dokaz.naziv}
                   </TableCell>
 
-                  {/* Badge tipa dokaza sa odgovarajućom bojom */}
                   <TableCell>
-                    <Badge className={`text-xs ${tipBadgeKlasa(dokaz.tipDokaza)}`}>
+                    <span className={`fis-badge ${tipBadgeKlasa(dokaz.tipDokaza)}`}>
                       {tipLabel(dokaz.tipDokaza)}
-                    </Badge>
+                    </span>
                   </TableCell>
 
-                  {/* Badge statusa dokaza — KOMPROMITOVAN je narandžast */}
                   <TableCell>
-                    <Badge className={`text-xs ${statusBadgeKlasa(dokaz.status)}`}>
+                    <span className={`fis-badge ${statusBadgeKlasa(dokaz.status)}`}>
                       {statusLabel(dokaz.status)}
-                    </Badge>
+                    </span>
                   </TableCell>
 
                   {/* Naziv predmeta */}

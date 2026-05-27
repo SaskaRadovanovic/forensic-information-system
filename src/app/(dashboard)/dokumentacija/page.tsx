@@ -39,6 +39,7 @@ export default async function DokumentacijaPage({
 }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
+  if (session.user.uloga === "TEHNICAR") redirect("/dokazi");
 
   const params = await searchParams;
   const sortBy = params.sortBy ?? "datumKreiranja";

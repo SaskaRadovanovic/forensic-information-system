@@ -18,6 +18,7 @@ export default async function DokumentDetaljiPage({
 }) {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
+  if (session.user.uloga === "TEHNICAR") redirect("/dokazi");
 
   const { id } = await params;
   const dokumentId = parseInt(id, 10);

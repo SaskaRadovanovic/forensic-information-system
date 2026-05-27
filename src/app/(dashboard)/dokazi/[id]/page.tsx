@@ -7,8 +7,6 @@ import Link from "next/link";
 import {
   ArrowLeft, Calendar, MapPin, User, FolderOpen, Pencil, Clock, Search,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArhivirajDokazDugme } from "@/components/dokazi/ArhivirajDokazDugme";
@@ -18,14 +16,14 @@ import { LanacCuvanjaVremenskaLinija } from "@/components/dokazi/LanacCuvanjaVre
 
 function statusBadgeKlasa(status: string): string {
   const mapa: Record<string, string> = {
-    U_SKLADISTU: "bg-fis-green/10 text-fis-green border-0",
-    IZDATO_ZA_ANALIZU: "bg-fis-blue/10 text-fis-blue border-0",
-    VRACENO: "bg-fis-yellow/10 text-fis-yellow border-0",
-    ARHIVIRANO: "bg-fis-red/10 text-fis-red border-0",
-    KOMPROMITOVAN: "bg-fis-orange/10 text-fis-orange border-0",
-    PRIJEM: "bg-fis-surface3 text-fis-text2 border-0",
+    U_SKLADISTU: "text-fis-green border-fis-green/40",
+    IZDATO_ZA_ANALIZU: "text-fis-blue border-fis-blue/40",
+    VRACENO: "text-fis-yellow border-fis-yellow/40",
+    ARHIVIRANO: "text-fis-red border-fis-red/40",
+    KOMPROMITOVAN: "text-fis-orange border-fis-orange/40",
+    PRIJEM: "text-fis-text2 border-fis-border",
   };
-  return mapa[status] ?? "bg-fis-surface3 text-fis-text2 border-0";
+  return mapa[status] ?? "text-fis-text2 border-fis-border";
 }
 
 // ─── Helper: srpski naziv za status dokaza ───────────────────────────────────
@@ -125,13 +123,27 @@ export default async function DokazDetaljiPage({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Dugme za izmenu — vidljivo samo TEHNICARU i ADMINISTRATORU */}
           {mozeMenjati && (
             <Link href={`/dokazi/${dokaz.id}/izmeni`}>
-              <Button variant="outline" size="sm">
-                <Pencil className="h-4 w-4 mr-2" />
+              <button
+                style={{
+                  fontFamily: "var(--font-mono), monospace",
+                  fontSize: 11,
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  padding: "7px 14px",
+                  border: "1px solid #3a3a3a",
+                  background: "transparent",
+                  color: "#999999",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
                 Izmeni
-              </Button>
+              </button>
             </Link>
           )}
           {/* Dugme za arhiviranje — samo ADMINISTRATOR */}
@@ -150,11 +162,10 @@ export default async function DokazDetaljiPage({
               <p className="text-sm font-mono text-fis-text2">{dokaz.sifraDokaza}</p>
               <CardTitle className="text-xl mt-1">{dokaz.naziv}</CardTitle>
             </div>
-            {/* Badge statusa — KOMPROMITOVAN ima narandžastu boju */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge className={`text-xs ${statusBadgeKlasa(dokaz.status)}`}>
+              <span className={`fis-badge ${statusBadgeKlasa(dokaz.status)}`}>
                 {statusLabel(dokaz.status)}
-              </Badge>
+              </span>
             </div>
           </div>
         </CardHeader>
