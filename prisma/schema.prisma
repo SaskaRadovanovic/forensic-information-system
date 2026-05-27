@@ -81,17 +81,31 @@ model TehnicarZaDokaze {
   zahtevi      ZahtevZaDokaz[]
 }
 
-// ─── Predmet (stub — vlasništvo drugog tima, ovde samo referenca) ─────────────
+// ─── Enumi za predmete ────────────────────────────────────────────────────────
+
+enum FazaPredmeta {
+  ISTRAGA
+  PRIKUPLJANJE_DOKAZA
+  SUDJENJE
+}
+
+enum StatusPredmeta {
+  AKTIVAN
+  ZATVOREN
+}
+
+// ─── Predmet (vlasništvo tima Lazar) ─────────────────────────────────────────
 
 model Predmet {
-  id    Int     @id @default(autoincrement())
-  naziv String
-  opis  String? @db.Text
+  id             Int            @id @default(autoincrement())
+  naziv          String
+  opis           String?        @db.Text
+  status         StatusPredmeta @default(AKTIVAN)
+  faza           FazaPredmeta   @default(ISTRAGA)
+  datumOtvaranja DateTime       @default(now())
 
-  dokumenti Dokument[]
-  dokazi    Dokaz[]
-
-  // NOVO
+  dokumenti        Dokument[]
+  dokazi           Dokaz[]
   zahteviZaAnalizu ZahtevZaAnalizu[]
 }
 
