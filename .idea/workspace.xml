@@ -6,13 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2d27790c-51f1-4700-8550-d7c50bf4e8cc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(dashboard)/predmeti/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(dashboard)/predmeti/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(dashboard)/predmeti/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(dashboard)/predmeti/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/predmeti/ObrisiPredmetDugme.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/predmeti/ObrisiPredmetDugme.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/predmeti/PromeniPredmetFazuDugme.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/predmeti/PromeniPredmetFazuDugme.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/predmeti/ZatvoriPredmetDugme.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/predmeti/ZatvoriPredmetDugme.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.tsbuildinfo" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.tsbuildinfo" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +77,7 @@
       <workItem from="1779879323361" duration="162000" />
       <workItem from="1779879511179" duration="474000" />
       <workItem from="1779885469350" duration="786000" />
-      <workItem from="1779886961683" duration="5963000" />
+      <workItem from="1779886961683" duration="8083000" />
     </task>
     <servers />
   </component>

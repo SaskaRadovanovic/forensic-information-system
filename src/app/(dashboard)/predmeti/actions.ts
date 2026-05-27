@@ -176,6 +176,66 @@ export async function zatvoriPredmet(predmetId: number): Promise<Rezultat> {
   }
 }
 
+// ─── Potpuno brisanje predmeta sa svim vezanim podacima ─────────────────────
+
+export async function obrisiPredmetPotpuno(predmetId: number): Promise<Rezultat> {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.uloga !== "ADMINISTRATOR") {
+    return { ok: false, greska: "Samo administrator može potpuno brisati predmete." };
+  }
+
+  try {
+    const predmet = await prisma.predmet.findUnique({ where: { id: predmetId } });
+    if (!predmet) return { ok: false, greska: "Predmet nije pronađen." };
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Uzimamo ID-eve zahteva za analizu ovog predmeta
+      const zahtevi = await tx.zahtevZaAnalizu.findMany({
+        where: { predmetId },
+        select: { id: true },
+      });
+      const zahtevIds = zahtevi.map((z) => z.id);
+
+      // 2. Brišemo log brisanja zahteva (nema CASCADE)
+      if (zahtevIds.length > 0) {
+        await tx.logBrisanjaZahteva.deleteMany({ where: { zahtevId: { in: zahtevIds } } });
+      }
+
+      // 3. Brišemo zahteve za analizu (kaskada: RezultatAnalize, IstorijaDodele,
+      //    IstorijaStatusaAnalize, IstorijaIzmeneZahteva + Obavestenje SET NULL)
+      await tx.zahtevZaAnalizu.deleteMany({ where: { predmetId } });
+
+      // 4. Uzimamo ID-eve dokaza ovog predmeta
+      const dokazi = await tx.dokaz.findMany({
+        where: { predmetId },
+        select: { id: true },
+      });
+      const dokazIds = dokazi.map((d) => d.id);
+
+      // 5. Brišemo zahteve za dokaz (RESTRICT na Dokaz)
+      if (dokazIds.length > 0) {
+        await tx.zahtevZaDokaz.deleteMany({ where: { dokazId: { in: dokazIds } } });
+      }
+
+      // 6. Brišemo dokaze (kaskada: LanacCuvanja, BioloskiTrag, Oruzje,
+      //    DokumentDokaz, Odeca, Uzorak)
+      await tx.dokaz.deleteMany({ where: { predmetId } });
+
+      // 7. Brišemo dokumenta (kaskada: Metapodatak, PravoPristupa,
+      //    DokumentTag, DokumentArhiva)
+      await tx.dokument.deleteMany({ where: { predmetId } });
+
+      // 8. Konačno brišemo predmet
+      await tx.predmet.delete({ where: { id: predmetId } });
+    });
+
+    revalidatePath("/predmeti");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, greska: `Greška pri brisanju: ${e?.message ?? "nepoznata greška"}` };
+  }
+}
+
 // ─── Prelaz na sledeću fazu predmeta ────────────────────────────────────────
 
 export async function promeniPredmetFazu(predmetId: number): Promise<Rezultat> {

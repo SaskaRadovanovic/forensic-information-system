@@ -77,8 +77,10 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      naziv: "Predmet 2024-001",
-      opis: "Test predmet za razvoj",
+      naziv: "Ubistvo na Knez Mihailovoj — slučaj Nikolić",
+      opis: "Istraga ubojstva pronađenog u stanu na adresi Knez Mihailova 15. Žrtva: Dragan Nikolić, 45 god. Sumnja na ubojstvo hladnim oružjem. Osumnjičeni uhapšen.",
+      faza: "ANALIZA_DOKAZA",
+      datumOtvaranja: new Date("2026-01-14"),
     },
   });
 
@@ -86,8 +88,102 @@ async function main() {
     where: { id: 2 },
     update: {},
     create: {
-      naziv: "Predmet 2024-002",
-      opis: "Drugi test predmet",
+      naziv: "Falsifikovanje dokumenata — slučaj Peković",
+      opis: "Istraga falsifikovanja ličnih dokumenata i finansijske prevare. Osumnjičeni: Zoran Peković. Konfiskovana lična karta, pasoš i vozačka dozvola.",
+      faza: "DONOSENJE_ZAKLJUCKA",
+      datumOtvaranja: new Date("2026-01-28"),
+    },
+  });
+
+  // ── Dodatni predmeti sa različitim fazama ────────────────────────────────
+
+  await prisma.predmet.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      naziv: "Razbojništvo — benzinska pumpa Novi Beograd",
+      opis: "Oružana pljačka benzinske pumpe na Novom Beogradu. Počinilac neidentifikovan, snimci kamera obezbeđeni. Oštećena imovina procenjena na 450.000 RSD.",
+      faza: "OTVOREN_SLUCAJ",
+      datumOtvaranja: new Date("2026-03-02"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      naziv: "Narko-diler — zaplena heroina, Zemun",
+      opis: "Zaplena 2,3 kg heroina u stanu u Zemunu. Tri osumnjičena lica privedena. Istraga u toku radi otkrivanja mreže snabdevanja.",
+      faza: "PRIKUPLJANJE_DOKAZA",
+      datumOtvaranja: new Date("2026-02-10"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 5 },
+    update: {},
+    create: {
+      naziv: "Digitalna prevara — internet kupovina",
+      opis: "Serija prevara putem lažnih oglasa na internetu. Oštećeno 14 lica, ukupna šteta 1.2 miliona RSD. IP adrese prikupljene, identitet počinioca utvrđen.",
+      faza: "ANALIZA_DOKAZA",
+      datumOtvaranja: new Date("2026-01-20"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 6 },
+    update: {},
+    create: {
+      naziv: "Teška krađa vozila — Palilula",
+      opis: "Organizovana krađa 5 vozila u roku od mesec dana na Paliluli. Vozila pronađena u Mađarskoj. Počinioci identifikovani i uhapšeni, predmet u završnoj fazi.",
+      faza: "DONOSENJE_ZAKLJUCKA",
+      datumOtvaranja: new Date("2025-11-05"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 7 },
+    update: {},
+    create: {
+      naziv: "Požar — magacin u Surčinu (arson)",
+      opis: "Namerni požar u magacinu tekstilne robe. Šteta procenjena na 8 miliona RSD. Hemijska analiza ostataka potvrdila upotrebu akceleratora. Predmet zatvoren.",
+      faza: "ZATVOREN_SLUCAJ",
+      status: "ZATVOREN",
+      datumOtvaranja: new Date("2025-09-14"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 8 },
+    update: {},
+    create: {
+      naziv: "Napad na sluzbeno lice — policajac Vukić",
+      opis: "Napad na policijskog službenika tokom hapšenja. Osumnjičeni Slobodan Mrđa pritvoren. Medicinsko veštačenje i video-snimci prikupljeni.",
+      faza: "PRIKUPLJANJE_DOKAZA",
+      datumOtvaranja: new Date("2026-04-18"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 9 },
+    update: {},
+    create: {
+      naziv: "Korupcija u javnoj nabavci — opština Čukarica",
+      opis: "Istraga korupcije i zloupotrebe službenog položaja pri dodeli tendera za izgradnju parka. Finansijska forenzika u toku.",
+      faza: "ANALIZA_DOKAZA",
+      datumOtvaranja: new Date("2025-12-01"),
+    },
+  });
+
+  await prisma.predmet.upsert({
+    where: { id: 10 },
+    update: {},
+    create: {
+      naziv: "Nestanak osobe — Milena Đorđević",
+      opis: "Istraga nestanka Milene Đorđević (32), nestala 15.03.2026. Pronađeni lični predmeti, istraga u završnoj fazi. Predmet zatvoren.",
+      faza: "ZATVOREN_SLUCAJ",
+      status: "ZATVOREN",
+      datumOtvaranja: new Date("2026-03-16"),
     },
   });
 

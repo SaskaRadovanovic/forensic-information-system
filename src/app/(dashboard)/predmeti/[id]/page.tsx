@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ObrisiPredmetDugme } from "@/components/predmeti/ObrisiPredmetDugme";
+import { ObrisiPredmetPotpunoDugme } from "@/components/predmeti/ObrisiPredmetPotpunoDugme";
 import { ZatvoriPredmetDugme } from "@/components/predmeti/ZatvoriPredmetDugme";
 import { PromeniPredmetFazuDugme } from "@/components/predmeti/PromeniPredmetFazuDugme";
 import { PredmetDetaljiTabs } from "@/components/predmeti/PredmetDetaljiTabs";
@@ -258,7 +258,7 @@ export default async function PredmetDetaljiPage({
           </Link>
         )}
         {mozeObrisati && (
-          <ObrisiPredmetDugme predmetId={predmet.id} naziv={predmet.naziv} />
+          <ObrisiPredmetPotpunoDugme predmetId={predmet.id} naziv={predmet.naziv} />
         )}
       </div>
     </div>
