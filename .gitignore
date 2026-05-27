@@ -1,0 +1,5 @@
+node_modules/ 
+.next/ 
+.env 
+dev_output.txt 
+dev_error.txt 

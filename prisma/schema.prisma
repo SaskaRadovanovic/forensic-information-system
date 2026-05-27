@@ -1,0 +1,465 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enumi ────────────────────────────────────────────────────────────────────
+
+enum Uloga {
+  ADMINISTRATOR
+  ISTRAZITELJ
+  TEHNICAR
+  VESTAK
+}
+
+enum DokumentStatus {
+  AKTIVAN
+  ARHIVIRAN
+}
+
+enum DokazStatus {
+  PRIJEM
+  U_SKLADISTU
+  IZDATO_ZA_ANALIZU
+  VRACENO
+  KOMPROMITOVAN
+  ARHIVIRANO
+}
+
+enum TipDokaza {
+  BIOLOSKI_TRAG
+  ORUZJE
+  DOKUMENT
+  ODECA
+  UZORAK
+}
+
+// ─── Korisnik (stub — vlasništvo ovog tima) ───────────────────────────────────
+
+model Korisnik {
+  id             Int      @id @default(autoincrement())
+  ime            String
+  prezime        String
+  email          String   @unique
+  korIme         String?  @unique
+  lozinkaHash    String
+  uloga          Uloga
+  aktivan        Boolean  @default(true)
+  datumKreiranja DateTime @default(now())
+
+  dokumenti         Dokument[]        @relation("AutorDokumenta")
+  pravaPristupa     PravoPristupa[]
+  arhiviraoKorisnik DokumentArhiva[]  @relation("SacuvaoArhivu")
+  tehnicarProfil    TehnicarZaDokaze?
+  zahteviZaDokaz    ZahtevZaDokaz[]   @relation("PodneoZahtev")
+
+  // NOVO: relacije ka podsistemu analiza
+  istraziteljProfil        Istrazitelj?
+  vestakProfil             Vestak?
+  rezultatiKojeJeUneo      RezultatAnalize[]        @relation("UneaoRezultat")
+  dodeleKojeJeIzvrsio      IstorijaDodele[]         @relation("DodelioDodelu")
+  promeneStatusaKojeJeInicirao IstorijaStatusaAnalize[] @relation("IniciraoStatusAnalize")
+  brisanjaKojeJeIzvrsio   LogBrisanjaZahteva[]     @relation("ObrisaoZahtev")
+  obavestenja              Obavestenje[]            @relation("PrimaObavestenje")
+  izmeneZahteva            IstorijaIzmeneZahteva[]  @relation("IzmeniozahtevKorisnik")
+}
+
+// ─── Tehničar za dokaze (ISA podtip Korisnika) ──────────────────────────────
+
+model TehnicarZaDokaze {
+  idKorisnik Int     @id
+  idTd       String  @unique
+  odeljenje  String?
+
+  korisnik     Korisnik        @relation(fields: [idKorisnik], references: [id])
+  dokazi       Dokaz[]         @relation("EvidentiraoDokaz")
+  lanacCuvanja LanacCuvanja[]
+  zahtevi      ZahtevZaDokaz[]
+}
+
+// ─── Predmet (stub — vlasništvo drugog tima, ovde samo referenca) ─────────────
+
+model Predmet {
+  id    Int     @id @default(autoincrement())
+  naziv String
+  opis  String? @db.Text
+
+  dokumenti Dokument[]
+  dokazi    Dokaz[]
+
+  // NOVO
+  zahteviZaAnalizu ZahtevZaAnalizu[]
+}
+
+// ─── Dokumentacija ────────────────────────────────────────────────────────────
+
+model Dokument {
+  id             Int            @id @default(autoincrement())
+  naziv          String
+  putanja        String // /uploads/{timestamp}_{filename}.pdf
+  verzija        Int            @default(1)
+  status         DokumentStatus @default(AKTIVAN)
+  datumKreiranja DateTime       @default(now())
+
+  predmetId Int
+  predmet   Predmet @relation(fields: [predmetId], references: [id])
+
+  autorId Int
+  autor   Korisnik @relation("AutorDokumenta", fields: [autorId], references: [id])
+
+  metapodaci    Metapodatak[]
+  pravaPristupa PravoPristupa[]
+  tagovi        DokumentTag[]
+  arhiva        DokumentArhiva[]
+}
+
+model Metapodatak {
+  id         Int      @id @default(autoincrement())
+  kljuc      String // "tipDokumenta" | "opis"
+  vrednost   String   @db.Text
+  dokumentId Int
+  dokument   Dokument @relation(fields: [dokumentId], references: [id], onDelete: Cascade)
+}
+
+model PravoPristupa {
+  id           Int      @id @default(autoincrement())
+  nivoPristupa String // "JAVNO" | "INTERNO" | "POVERLJIVO" | "STROGO_POVERLJIVO"
+  datumDodele  DateTime @default(now())
+
+  korisnikId Int
+  korisnik   Korisnik @relation(fields: [korisnikId], references: [id])
+
+  dokumentId Int
+  dokument   Dokument @relation(fields: [dokumentId], references: [id], onDelete: Cascade)
+
+  @@unique([korisnikId, dokumentId])
+}
+
+model Tag {
+  id        Int           @id @default(autoincrement())
+  naziv     String        @unique
+  boja      String        @default("#FACC15")
+  dokumenti DokumentTag[]
+}
+
+model DokumentTag {
+  dokumentId Int
+  tagId      Int
+  dokument   Dokument @relation(fields: [dokumentId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([dokumentId, tagId])
+}
+
+model DokumentArhiva {
+  id                  Int      @id @default(autoincrement())
+  putanjaStaraVerzija String
+  verzija             Int
+  razlogIzmene        String?  @db.Text
+  datumArhiviranja    DateTime @default(now())
+
+  dokumentId Int
+  dokument   Dokument @relation(fields: [dokumentId], references: [id], onDelete: Cascade)
+
+  sacuvaoId Int
+  sacuvao   Korisnik @relation("SacuvaoArhivu", fields: [sacuvaoId], references: [id])
+}
+
+// ─── Upravljanje dokazima ─────────────────────────────────────────────────────
+
+model Dokaz {
+  id                   Int         @id @default(autoincrement())
+  sifraDokaza          String      @unique
+  naziv                String
+  opis                 String?     @db.Text
+  tipDokaza            TipDokaza
+  datumPrijema         DateTime
+  datumPronalaska      DateTime?
+  lokacijaPronalaska   String?
+  lokacijaSkladistenja String?
+  status               DokazStatus @default(PRIJEM)
+
+  predmetId Int
+  predmet   Predmet @relation(fields: [predmetId], references: [id])
+
+  tehnicarId Int
+  tehnicar   TehnicarZaDokaze @relation("EvidentiraoDokaz", fields: [tehnicarId], references: [idKorisnik])
+
+  lanacCuvanja  LanacCuvanja[]
+  bioloskiTrag  BioloskiTrag?
+  oruzje        Oruzje?
+  dokumentDokaz DokumentDokaz?
+  odeca         Odeca?
+  uzorak        Uzorak?
+  zahtevi       ZahtevZaDokaz[]
+
+  // NOVO
+  zahteviZaAnalizu ZahtevZaAnalizu[]
+}
+
+// ─── Lanac čuvanja ────────────────────────────────────────────────────────────
+
+model LanacCuvanja {
+  id         Int      @id @default(autoincrement())
+  akcija     String
+  datumVreme DateTime
+  napomena   String?  @db.Text
+
+  dokazId Int
+  dokaz   Dokaz @relation(fields: [dokazId], references: [id], onDelete: Cascade)
+
+  tehnicarId Int
+  tehnicar   TehnicarZaDokaze @relation(fields: [tehnicarId], references: [idKorisnik])
+}
+
+// ─── ISA podtipovi dokaza (totalno, disjunktno) ──────────────────────────────
+
+model BioloskiTrag {
+  idDokaz          Int     @id
+  vrstaTraga       String?
+  nacinUzorkovanja String?
+  usloviCuvanja    String?
+  kolicina         String?
+
+  dokaz Dokaz @relation(fields: [idDokaz], references: [id], onDelete: Cascade)
+}
+
+model Oruzje {
+  idDokaz     Int     @id
+  vrstaOruzja String?
+  marka       String?
+  model       String?
+  kalibar     String?
+  serijskiBr  String? @unique
+
+  dokaz Dokaz @relation(fields: [idDokaz], references: [id], onDelete: Cascade)
+}
+
+model DokumentDokaz {
+  idDokaz        Int     @id
+  vrstaDokumenta String?
+  jezik          String?
+  brojStranica   Int?
+
+  dokaz Dokaz @relation(fields: [idDokaz], references: [id], onDelete: Cascade)
+}
+
+model Odeca {
+  idDokaz              Int     @id
+  velicina             String?
+  vrstaOdevnogPredmeta String?
+  boja                 String?
+  stanje               String?
+
+  dokaz Dokaz @relation(fields: [idDokaz], references: [id], onDelete: Cascade)
+}
+
+model Uzorak {
+  idDokaz          Int     @id
+  vrstaUzorka      String?
+  kolicina         String?
+  jedinicaMere     String?
+  nacinUzorkovanja String?
+  usloviCuvanja    String?
+
+  dokaz Dokaz @relation(fields: [idDokaz], references: [id], onDelete: Cascade)
+}
+
+// ─── Zahtevi za dokaze ────────────────────────────────────────────────────────
+
+enum StatusZahteva {
+  NA_CEKANJU
+  ODOBREN
+  ODBIJEN
+}
+
+model ZahtevZaDokaz {
+  id             Int           @id @default(autoincrement())
+  tip            String // "PREDAJA" | "POVRACAJ"
+  razlog         String?       @db.Text
+  status         StatusZahteva @default(NA_CEKANJU)
+  datumKreiranja DateTime      @default(now())
+  datumObrade    DateTime?
+  napomena       String?       @db.Text
+
+  dokazId Int
+  dokaz   Dokaz @relation(fields: [dokazId], references: [id])
+
+  podnosilacId Int
+  podnosilac   Korisnik @relation("PodneoZahtev", fields: [podnosilacId], references: [id])
+
+  tehnicarId Int?
+  tehnicar   TehnicarZaDokaze? @relation(fields: [tehnicarId], references: [idKorisnik])
+}
+
+// ─── NOVO: Enumi za podsistem analiza ────────────────────────────────────────
+
+enum StatusAnalize {
+  KREIRAN
+  DODELJEN
+  U_TOKU
+  ZAVRSEN
+  PREKORACEN
+  ODBIJEN
+}
+
+enum TipAnalize {
+  BALISTICKA
+  DNK
+  DIGITALNA
+  HEMIJSKA
+  TOKSIKOLOSKA
+  DOKUMENTOLOSKA
+  DRUGA
+}
+
+// ─── NOVO: Istražitelj (ISA podtip Korisnika) ────────────────────────────────
+
+model Istrazitelj {
+  idKorisnik Int    @id
+  brojZnacke String @unique
+  odeljenje  String?
+
+  korisnik Korisnik          @relation(fields: [idKorisnik], references: [id])
+  zahtevi  ZahtevZaAnalizu[] @relation("KreiraoZahtev")
+}
+
+// ─── NOVO: Veštak (ISA podtip Korisnika) ─────────────────────────────────────
+
+model Vestak {
+  idKorisnik   Int    @id
+  idVestak     String @unique
+  specijalnost String?
+  sertifikatBr String?
+
+  korisnik        Korisnik          @relation(fields: [idKorisnik], references: [id])
+  aktuelniZahtevi ZahtevZaAnalizu[] @relation("TrenutniVestak")
+  dodele          IstorijaDodele[]  @relation("DodelijenVestaku")
+}
+
+// ─── NOVO: Zahtev za analizu ─────────────────────────────────────────────────
+
+model ZahtevZaAnalizu {
+  id                 Int           @id @default(autoincrement())
+  opis               String?       @db.Text
+  tipAnalize         TipAnalize
+  datumKreiranja     DateTime      @default(now())
+  datumPocetka       DateTime?
+  rok                DateTime?
+  status             StatusAnalize @default(KREIRAN)
+  pragUpozorenjaDana Int           @default(3)
+
+  istraziteljId Int
+  istrazitelj   Istrazitelj @relation("KreiraoZahtev", fields: [istraziteljId], references: [idKorisnik])
+
+  dokazId Int
+  dokaz   Dokaz @relation(fields: [dokazId], references: [id])
+
+  predmetId Int
+  predmet   Predmet @relation(fields: [predmetId], references: [id])
+
+  vestakId Int?
+  vestak   Vestak? @relation("TrenutniVestak", fields: [vestakId], references: [idKorisnik])
+
+  rezultat        RezultatAnalize?
+  istorijaDodela  IstorijaDodele[]
+  istorijaStatusa IstorijaStatusaAnalize[]
+  istorijaIzmena  IstorijaIzmeneZahteva[]
+  obavestenja     Obavestenje[]
+}
+
+// ─── NOVO: Rezultat analize ───────────────────────────────────────────────────
+
+model RezultatAnalize {
+  id          Int      @id @default(autoincrement())
+  sadrzaj     String   @db.Text
+  datumUnosa  DateTime @default(now())
+  verifikovan Boolean  @default(false)
+
+  zahtevId Int             @unique
+  zahtev   ZahtevZaAnalizu @relation(fields: [zahtevId], references: [id])
+
+  uneaoId Int
+  uneao   Korisnik @relation("UneaoRezultat", fields: [uneaoId], references: [id])
+}
+
+// ─── NOVO: Istorija dodela veštaka ───────────────────────────────────────────
+
+model IstorijaDodele {
+  id            Int      @id @default(autoincrement())
+  datumDodele   DateTime @default(now())
+  razlogPromene String?  @db.Text
+
+  zahtevId Int
+  zahtev   ZahtevZaAnalizu @relation(fields: [zahtevId], references: [id], onDelete: Cascade)
+
+  vestakId Int
+  vestak   Vestak @relation("DodelijenVestaku", fields: [vestakId], references: [idKorisnik])
+
+  dodeliooId Int
+  dodelio    Korisnik @relation("DodelioDodelu", fields: [dodeliooId], references: [id])
+}
+
+// ─── NOVO: Istorija promena statusa analize ───────────────────────────────────
+
+model IstorijaStatusaAnalize {
+  id          Int            @id @default(autoincrement())
+  stariStatus StatusAnalize?
+  noviStatus  StatusAnalize
+  datumVreme  DateTime       @default(now())
+  napomena    String?        @db.Text
+
+  zahtevId Int
+  zahtev   ZahtevZaAnalizu @relation(fields: [zahtevId], references: [id], onDelete: Cascade)
+
+  iniciraoId Int
+  inicirao   Korisnik @relation("IniciraoStatusAnalize", fields: [iniciraoId], references: [id])
+}
+
+// ─── NOVO: Log brisanja zahteva ───────────────────────────────────────────────
+
+model LogBrisanjaZahteva {
+  id            Int      @id @default(autoincrement())
+  zahtevId      Int      // čuva se vrednost, ne FK (zahtev je obrisan)
+  datumBrisanja DateTime @default(now())
+  razlog        String   @db.Text
+
+  obrisaoId Int
+  obrisao   Korisnik @relation("ObrisaoZahtev", fields: [obrisaoId], references: [id])
+}
+
+// ─── NOVO: Istorija izmena zahteva ───────────────────────────────────────────
+
+model IstorijaIzmeneZahteva {
+  id            Int      @id @default(autoincrement())
+  polje         String        // naziv polja koje je promenjeno
+  staraVrednost String?  @db.Text
+  novaVrednost  String   @db.Text
+  datumVreme    DateTime @default(now())
+
+  zahtevId  Int
+  zahtev    ZahtevZaAnalizu @relation(fields: [zahtevId], references: [id], onDelete: Cascade)
+
+  korisnikId Int
+  korisnik   Korisnik @relation("IzmeniozahtevKorisnik", fields: [korisnikId], references: [id])
+}
+
+// ─── NOVO: Obaveštenje ────────────────────────────────────────────────────────
+
+model Obavestenje {
+  id         Int      @id @default(autoincrement())
+  sadrzaj    String   @db.Text
+  procitano  Boolean  @default(false)
+  tip        String   // "DODELA" | "PROMENA_STATUSA" | "ROK_BLIZI" | "ROK_PREKORACEN"
+  datumVreme DateTime @default(now())
+
+  korisnikId Int
+  korisnik   Korisnik @relation("PrimaObavestenje", fields: [korisnikId], references: [id])
+
+  zahtevId Int?
+  zahtev   ZahtevZaAnalizu? @relation(fields: [zahtevId], references: [id], onDelete: SetNull)
+}
