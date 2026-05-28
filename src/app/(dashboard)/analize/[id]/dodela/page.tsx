@@ -31,11 +31,13 @@ export default async function DodelaPage({ params }: Params) {
   if (zahtev.status === "U_TOKU" || zahtev.status === "ZAVRSEN" || zahtev.status === "ODBIJEN")
     redirect(`/analize/${zahtevId}`);
 
-  // Učitavamo sve veštake za odabir
-  const vestaci = await prisma.vestak.findMany({
-    include: { korisnik: { select: { ime: true, prezime: true } } },
-    orderBy: { korisnik: { prezime: "asc" } },
-  });
+  // Učitavamo sve veštake za odabir — sortiramo u JS da izbegnemo
+  // potencijalni problem sa orderBy po relaciji u MySQL + Prisma
+  const vestaci = (
+    await prisma.vestak.findMany({
+      include: { korisnik: { select: { ime: true, prezime: true } } },
+    })
+  ).sort((a, b) => a.korisnik.prezime.localeCompare(b.korisnik.prezime));
 
   return (
     <div className="max-w-xl mx-auto">

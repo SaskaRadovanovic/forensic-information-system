@@ -20,10 +20,7 @@ export function validatePdf(file: File): { ok: true } | { ok: false; error: stri
   return { ok: true };
 }
 
-/**
- * Čuva uploadovani PDF fajl na disk.
- * Vraća relativnu putanju oblika: /uploads/{timestamp}_{sanitizedName}.pdf
- */
+
 export async function savePdf(file: File): Promise<string> {
   await ensureUploadsDir();
 
@@ -40,14 +37,19 @@ export async function savePdf(file: File): Promise<string> {
   return `/uploads/${fileName}`;
 }
 
-/**
- * Pravi kopiju postojećeg PDF-a (za arhiviranje stare verzije).
- * Vraća relativnu putanju kopije.
- */
+
 export async function copyPdf(relativePath: string, dokumentId: number): Promise<string> {
   await ensureUploadsDir();
 
   const srcPath = path.join(process.cwd(), relativePath);
+
+
+  try {
+    await fs.access(srcPath);
+  } catch {
+    return relativePath;
+  }
+
   const timestamp = Date.now();
   const destFileName = `${dokumentId}_archive_${timestamp}.pdf`;
   const destPath = path.join(UPLOADS_DIR, destFileName);
