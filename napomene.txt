@@ -1,0 +1,11 @@
+NAPOMENE O RAZLIKAMA IZMEĐU NEXT.JS I PHP VERZIJE
+===================================================
+
+1. Upload fajlova je SIMULIRAN — forma za upload postoji ali se fajl ne čuva na disk.
+   U Next.js verziji fajlovi se čuvaju u /uploads/ direktorijumu.
+
+2. Nema REST API-ja — PHP verzija ima samo server-rendered stranice.
+   Next.js verzija je imala API rute za interoperabilnost sa drugim timovima.
+
+3. Obaveštenja se osvežavaju na page load, ne real-time.
+   Next.js verzija je imala polling svakih 60 sekundi.
