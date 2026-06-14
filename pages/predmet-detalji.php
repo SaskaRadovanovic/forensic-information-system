@@ -21,6 +21,31 @@ if (!$predmet) {
     exit;
 }
 
+// ─── Kreator predmeta ──────────────────────────────────────────────────────
+$kreator = null;
+if ($predmet['istrazitelj_id']) {
+    $stmt = $conn->prepare("SELECT ime, prezime FROM korisnik WHERE id = ?");
+    $stmt->bind_param('i', $predmet['istrazitelj_id']);
+    $stmt->execute();
+    $kreator = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
+$userId        = $_SESSION['user_id'];
+$uloga         = $_SESSION['uloga'];
+$jeKreator     = ((int)$predmet['istrazitelj_id'] === $userId);
+$mozeMenjaFazu = ($uloga === 'ADMINISTRATOR' || $jeKreator);
+
+// ─── Završni izveštaj ──────────────────────────────────────────────────────
+$zavrsniIzvestaj = null;
+if (in_array($predmet['faza'], ['DONOSENJE_ZAKLJUCKA', 'ZATVOREN_SLUCAJ'])) {
+    $stmt = $conn->prepare("SELECT * FROM zavrsni_izvestaj WHERE predmet_id = ?");
+    $stmt->bind_param('i', $predmetId);
+    $stmt->execute();
+    $zavrsniIzvestaj = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
 // ─── Statistike ────────────────────────────────────────────────────────────
 $stmt = $conn->prepare("SELECT COUNT(*) as cnt FROM dokaz WHERE predmet_id = ?");
 $stmt->bind_param('i', $predmetId);
@@ -46,10 +71,15 @@ $trenutniIndex = array_search($predmet['faza'], $faze);
 ?>
 
 <!-- Breadcrumb -->
-<div class="page-breadcrumb">
-    <a href="?page=predmeti" class="btn btn-ghost btn-sm">&larr; Predmeti</a>
-    <span style="color: var(--text-3); font-family: var(--mono); font-size: 12px;">/</span>
-    <span style="color: var(--text-2); font-family: var(--mono); font-size: 12px;">#<?= $predmetId ?></span>
+<div class="page-breadcrumb" style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:8px;">
+        <a href="?page=predmeti" class="btn btn-ghost btn-sm">&larr; Predmeti</a>
+        <span style="color: var(--text-3); font-family: var(--mono); font-size: 12px;">/</span>
+        <span style="color: var(--text-2); font-family: var(--mono); font-size: 12px;">#<?= $predmetId ?></span>
+    </div>
+    <a href="?page=istorija-predmeta&id=<?= $predmetId ?>" class="btn btn-ghost btn-sm">
+        Istorija slučaja &#8594;
+    </a>
 </div>
 
 <!-- Naslov + status -->
@@ -73,6 +103,16 @@ $trenutniIndex = array_search($predmet['faza'], $faze);
 
 <!-- Info grid -->
 <div class="info-grid">
+    <div class="info-item">
+        <div class="info-label">Istražitelja</div>
+        <div class="info-value">
+            <?php if ($kreator): ?>
+                <?= e($kreator['ime'] . ' ' . $kreator['prezime']) ?>
+            <?php else: ?>
+                <span style="color:var(--text-3);">—</span>
+            <?php endif; ?>
+        </div>
+    </div>
     <div class="info-item">
         <div class="info-label">Datum otvaranja</div>
         <div class="info-value"><?= formatDatumVreme($predmet['datum_otvaranja']) ?></div>
@@ -231,10 +271,101 @@ $trenutniIndex = array_search($predmet['faza'], $faze);
     </div>
 </div>
 
+<!-- Završni izveštaj -->
+<?php if ($predmet['faza'] === 'DONOSENJE_ZAKLJUCKA'): ?>
+<div class="card" style="border-color: var(--yellow); margin-top: 24px;">
+    <div class="card-header" style="border-color: var(--yellow);">
+        <h3 style="color: var(--yellow);">Završni izveštaj</h3>
+    </div>
+    <div class="card-body">
+        <?php if ($zavrsniIzvestaj): ?>
+        <p style="color:var(--green); margin-bottom:16px; font-size:13px;">
+            ✓ Izveštaj kreiran — možete preći u fazu Zatvoren slučaj.
+        </p>
+        <div style="display:grid; gap:16px;">
+            <div>
+                <div class="info-label">Predlog odluke</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['predlog_odluke']) ?></div>
+            </div>
+            <div>
+                <div class="info-label">Pregled nalaza</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['pregled_nalaza']) ?></div>
+            </div>
+            <div>
+                <div class="info-label">Zaključak istrage</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['zakljucak_istrage']) ?></div>
+            </div>
+        </div>
+        <?php if ($mozeMenjaFazu): ?>
+        <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:12px;">
+            <a href="#izvestaj-forma" onclick="document.getElementById('izvestaj-forma').style.display='block'; this.style.display='none'; return false;"
+               class="btn btn-ghost btn-sm">Izmeni izveštaj</a>
+        </div>
+        <?php endif; ?>
+        <?php else: ?>
+        <?php if ($mozeMenjaFazu): ?>
+        <p style="color:var(--text-2); margin-bottom:16px; font-size:13px;">
+            Pre prelaska u fazu <strong>Zatvoren slučaj</strong> morate popuniti završni izveštaj.
+        </p>
+        <?php else: ?>
+        <p style="color:var(--text-3); font-size:13px;">Izveštaj još nije kreiran.</p>
+        <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($mozeMenjaFazu): ?>
+        <form id="izvestaj-forma" method="POST"
+              action="?page=predmet-detalji&id=<?= $predmetId ?>&action=kreiraj-izvestaj"
+              style="<?= $zavrsniIzvestaj ? 'display:none;' : '' ?> margin-top:16px;">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Predlog odluke *</label>
+                    <textarea name="predlog_odluke" rows="4" required
+                        placeholder="Unesite predlog odluke..."><?= e($zavrsniIzvestaj['predlog_odluke'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group full">
+                    <label>Pregled nalaza *</label>
+                    <textarea name="pregled_nalaza" rows="4" required
+                        placeholder="Unesite pregled nalaza..."><?= e($zavrsniIzvestaj['pregled_nalaza'] ?? '') ?></textarea>
+                </div>
+                <div class="form-group full">
+                    <label>Zaključak istrage *</label>
+                    <textarea name="zakljucak_istrage" rows="4" required
+                        placeholder="Unesite zaključak istrage..."><?= e($zavrsniIzvestaj['zakljucak_istrage'] ?? '') ?></textarea>
+                </div>
+            </div>
+            <div class="action-bar" style="margin-top:0; padding-top:0; border:none;">
+                <button type="submit" class="btn btn-primary">Sačuvaj izveštaj</button>
+            </div>
+        </form>
+        <?php endif; ?>
+    </div>
+</div>
+<?php elseif ($predmet['faza'] === 'ZATVOREN_SLUCAJ' && $zavrsniIzvestaj): ?>
+<div class="card" style="margin-top: 24px;">
+    <div class="card-header"><h3>Završni izveštaj</h3></div>
+    <div class="card-body">
+        <div style="display:grid; gap:16px;">
+            <div>
+                <div class="info-label">Predlog odluke</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['predlog_odluke']) ?></div>
+            </div>
+            <div>
+                <div class="info-label">Pregled nalaza</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['pregled_nalaza']) ?></div>
+            </div>
+            <div>
+                <div class="info-label">Zaključak istrage</div>
+                <div style="margin-top:6px; color:var(--text-1); white-space:pre-wrap;"><?= e($zavrsniIzvestaj['zakljucak_istrage']) ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Dugmad -->
 <div class="action-bar">
     <?php if ($predmet['status'] === 'AKTIVAN'): ?>
-        <?php if (in_array($_SESSION['uloga'], ['ADMINISTRATOR', 'ISTRAZITELJ']) && $trenutniIndex < count($faze) - 1): ?>
+        <?php if ($mozeMenjaFazu && $trenutniIndex < count($faze) - 1): ?>
         <form method="POST" action="?page=predmet-detalji&id=<?= $predmetId ?>&action=sledeca-faza" style="display:inline;">
             <button type="submit" class="btn btn-primary" onclick="return confirm('Promeniti fazu u: <?= e(fazaLabel($faze[$trenutniIndex + 1])) ?>?')">
                 Sledeća faza →
@@ -253,15 +384,25 @@ $trenutniIndex = array_search($predmet['faza'], $faze);
         <?php endif; ?>
     <?php endif; ?>
 
-    <?php if ($_SESSION['uloga'] === 'ADMINISTRATOR'): ?>
-        <?php if ($brDokaza == 0 && $brDokumenata == 0 && $brAnaliza == 0): ?>
-        <form method="POST" action="?page=predmet-detalji&id=<?= $predmetId ?>&action=obrisi" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Da li ste sigurni? Ova akcija je nepovratna.')">Obriši</button>
-        </form>
-        <?php else: ?>
+    <?php if ($uloga === 'ADMINISTRATOR' || $jeKreator): ?>
+        <?php
+        $imaEntiteta = ($brDokaza > 0 || $brAnaliza > 0 || $brDokumenata > 0);
+        $delovi = [];
+        if ($brDokaza > 0)    $delovi[] = $brDokaza    . ($brDokaza    === 1 ? ' dokaz'     : ($brDokaza    < 5 ? ' dokaza'  : ' dokaza'));
+        if ($brAnaliza > 0)   $delovi[] = $brAnaliza   . ($brAnaliza   === 1 ? ' analiza'   : ($brAnaliza   < 5 ? ' analize' : ' analiza'));
+        if ($brDokumenata > 0) $delovi[] = $brDokumenata . ($brDokumenata === 1 ? ' dokument'  : ($brDokumenata < 5 ? ' dokumenta' : ' dokumenata'));
+
+        if ($imaEntiteta) {
+            $confirmMsg = 'UPOZORENJE: Brisanjem ovog predmeta trajno ce biti obrisano: ' . implode(', ', $delovi) . '. Ova akcija je NEPOVRATNA. Da li ste sigurni?';
+        } else {
+            $confirmMsg = 'Da li ste sigurni da zelite obrisati ovaj predmet? Ova akcija je nepovratna.';
+        }
+        ?>
         <form method="POST" action="?page=predmet-detalji&id=<?= $predmetId ?>&action=obrisi-sve" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('UPOZORENJE: Ovo će obrisati predmet i SVE povezane podatke (<?= $brDokaza ?> dokaza, <?= $brAnaliza ?> analiza, <?= $brDokumenata ?> dokumenata). Da li ste apsolutno sigurni?')">Obriši sve</button>
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('<?= addslashes($confirmMsg) ?>')">
+                Obriši predmet
+            </button>
         </form>
-        <?php endif; ?>
     <?php endif; ?>
 </div>

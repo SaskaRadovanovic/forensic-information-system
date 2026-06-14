@@ -13,7 +13,12 @@ $neprocitanaQuery->execute();
 $neprocitanaBroj = $neprocitanaQuery->get_result()->fetch_assoc()['cnt'];
 $neprocitanaQuery->close();
 
-$korisnik = currentUser();
+// Uvek čitamo ime/prezime iz baze — ne iz sesije koja može biti zastarela
+$kq = $conn->prepare("SELECT id, ime, prezime, email, uloga FROM korisnik WHERE id = ?");
+$kq->bind_param('i', $_SESSION['user_id']);
+$kq->execute();
+$korisnik = $kq->get_result()->fetch_assoc();
+$kq->close();
 ?>
 <!DOCTYPE html>
 <html lang="sr">

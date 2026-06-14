@@ -26,11 +26,49 @@ INSERT INTO istrazitelj (id_korisnik, broj_znacke, odeljenje) VALUES
 INSERT INTO vestak (id_korisnik, id_vestak, specijalnost, sertifikat_br) VALUES
 (4, 'VS-001', 'DNK analiza', 'SRT-2024-001');
 
--- ─── Predmeti ───────────────────────────────────────────────────────────────
-INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja) VALUES
-('Razbojništvo – Beograd Centar', 'Razbojništvo u centru Beograda, ul. Knez Mihailova', 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-01-15 09:00:00'),
-('Ubistvo – Novi Sad',            'Ubistvo u Novom Sadu, naselje Liman',               'AKTIVAN', 'ANALIZA_DOKAZA',      '2026-02-10 14:30:00'),
-('Prevara – Niš',                 'Finansijska prevara u Nišu',                          'AKTIVAN', 'OTVOREN_SLUCAJ',      '2026-03-20 11:00:00');
+-- ─── Predmeti (10 raznolikih predmeta sa svim fazama) ─────────────────────
+-- istrazitelj_id = 2 (Marko Petrović)
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+-- Predmet 1 — ima vezane dokaze i analize (ne brisati)
+('Ubistvo na Knez Mihailovoj — slučaj Nikolić',
+ 'Istraga ubojstva pronađenog u stanu na adresi Knez Mihailova 15. Žrtva: Dragan Nikolić, 45 god. Sumnja na ubojstvo hladnim oružjem. Osumnjičeni uhapšen.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-01-14 09:00:00', 2),
+-- Predmet 2 — ima vezane dokaze i analize (ne brisati)
+('Ubistvo — Novi Sad, naselje Liman',
+ 'Istraga ubojstva u Novom Sadu. Žrtva pronađena u parku na Limanu. Forenzička ekipa prikupila biološke tragove i oružje.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-02-10 14:30:00', 2),
+-- Predmet 3 — ima vezane dokaze i analize (ne brisati)
+('Falsifikovanje dokumenata — slučaj Peković',
+ 'Istraga falsifikovanja ličnih dokumenata i finansijske prevare. Osumnjičeni: Zoran Peković. Konfiskovana lična karta, pasoš i vozačka dozvola.',
+ 'AKTIVAN', 'DONOSENJE_ZAKLJUCKA', '2026-01-28 11:00:00', 2),
+-- Predmet 4 — bez vezanih podataka, različita faza
+('Razbojništvo — benzinska pumpa Novi Beograd',
+ 'Oružana pljačka benzinske pumpe na Novom Beogradu. Počinilac neidentifikovan, snimci kamera obezbeđeni. Oštećena imovina procenjena na 450.000 RSD.',
+ 'AKTIVAN', 'OTVOREN_SLUCAJ', '2026-03-02 09:00:00', 2),
+-- Predmet 5 — bez vezanih podataka
+('Narko-diler — zaplena heroina, Zemun',
+ 'Zaplena 2,3 kg heroina u stanu u Zemunu. Tri osumnjičena lica privedena. Istraga u toku radi otkrivanja mreže snabdevanja.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-02-10 10:00:00', 2),
+-- Predmet 6 — bez vezanih podataka
+('Digitalna prevara — internet kupovina',
+ 'Serija prevara putem lažnih oglasa na internetu. Oštećeno 14 lica, ukupna šteta 1.2 miliona RSD. IP adrese prikupljene, identitet počinioca utvrđen.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-01-20 08:00:00', 2),
+-- Predmet 7 — bez vezanih podataka
+('Teška krađa vozila — Palilula',
+ 'Organizovana krađa 5 vozila u roku od mesec dana na Paliluli. Vozila pronađena u Mađarskoj. Počinioci identifikovani i uhapšeni, predmet u završnoj fazi.',
+ 'AKTIVAN', 'DONOSENJE_ZAKLJUCKA', '2025-11-05 09:00:00', 2),
+-- Predmet 8 — ZATVOREN
+('Požar — magacin u Surčinu (arson)',
+ 'Namerni požar u magacinu tekstilne robe. Šteta procenjena na 8 miliona RSD. Hemijska analiza ostataka potvrdila upotrebu akceleratora. Predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-09-14 09:00:00', 2),
+-- Predmet 9 — bez vezanih podataka
+('Napad na službeno lice — policajac Vukić',
+ 'Napad na policijskog službenika tokom hapšenja. Osumnjičeni Slobodan Mrđa pritvoren. Medicinsko veštačenje i video-snimci prikupljeni.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-04-18 09:00:00', 2),
+-- Predmet 10 — ZATVOREN
+('Nestanak osobe — Milena Đorđević',
+ 'Istraga nestanka Milene Đorđević (32), nestala 15.03.2026. Pronađeni lični predmeti, istraga u završnoj fazi. Predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2026-03-16 09:00:00', 2);
 
 -- ─── Dokazi ─────────────────────────────────────────────────────────────────
 INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_pronalaska, lokacija_pronalaska, lokacija_skladistenja, status, predmet_id, tehnicar_id) VALUES

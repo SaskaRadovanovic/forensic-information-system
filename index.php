@@ -25,6 +25,7 @@ $dozvoljeneStranice = [
     'analiza-dodela', 'analiza-rezultat',
     'obavestenja',
     'izvestaji',
+    'istorija-predmeta',
 ];
 
 // Ako stranica nije u whitelist-u, prikaži 404

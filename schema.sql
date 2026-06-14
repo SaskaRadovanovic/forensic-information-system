@@ -76,7 +76,9 @@ CREATE TABLE predmet (
     opis             TEXT NULL,
     status           ENUM('AKTIVAN','ZATVOREN') NOT NULL DEFAULT 'AKTIVAN',
     faza             ENUM('OTVOREN_SLUCAJ','PRIKUPLJANJE_DOKAZA','ANALIZA_DOKAZA','DONOSENJE_ZAKLJUCKA','ZATVOREN_SLUCAJ') NOT NULL DEFAULT 'OTVOREN_SLUCAJ',
-    datum_otvaranja  DATETIME NOT NULL DEFAULT NOW()
+    datum_otvaranja  DATETIME NOT NULL DEFAULT NOW(),
+    istrazitelj_id   INT NULL,
+    FOREIGN KEY (istrazitelj_id) REFERENCES korisnik(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ─── Dokument ───────────────────────────────────────────────────────────────
@@ -335,4 +337,28 @@ CREATE TABLE obavestenje (
     zahtev_id    INT NULL,
     FOREIGN KEY (korisnik_id) REFERENCES korisnik(id),
     FOREIGN KEY (zahtev_id) REFERENCES zahtev_za_analizu(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ─── Istorija faza predmeta ─────────────────────────────────────────────────
+CREATE TABLE istorija_faze_predmeta (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    faza        ENUM('OTVOREN_SLUCAJ','PRIKUPLJANJE_DOKAZA','ANALIZA_DOKAZA','DONOSENJE_ZAKLJUCKA','ZATVOREN_SLUCAJ') NOT NULL,
+    datum_vreme DATETIME NOT NULL DEFAULT NOW(),
+    predmet_id  INT NOT NULL,
+    korisnik_id INT NOT NULL,
+    FOREIGN KEY (predmet_id) REFERENCES predmet(id),
+    FOREIGN KEY (korisnik_id) REFERENCES korisnik(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ─── Završni izveštaj ────────────────────────────────────────────────────────
+CREATE TABLE zavrsni_izvestaj (
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    predlog_odluke    TEXT NOT NULL,
+    pregled_nalaza    TEXT NOT NULL,
+    zakljucak_istrage TEXT NOT NULL,
+    datum_kreiranja   DATETIME NOT NULL DEFAULT NOW(),
+    predmet_id        INT NOT NULL UNIQUE,
+    kreirao_id        INT NOT NULL,
+    FOREIGN KEY (predmet_id) REFERENCES predmet(id),
+    FOREIGN KEY (kreirao_id) REFERENCES korisnik(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
