@@ -4,6 +4,9 @@
 -- ============================================================================
 
 -- Brisanje postojećih tabela (obrnut redosled od kreiranja)
+DROP TABLE IF EXISTS log_pristupa;
+DROP TABLE IF EXISTS zavrsni_izvestaj;
+DROP TABLE IF EXISTS istorija_faze_predmeta;
 DROP TABLE IF EXISTS obavestenje;
 DROP TABLE IF EXISTS istorija_izmene_zahteva;
 DROP TABLE IF EXISTS log_brisanja_zahteva;
@@ -88,6 +91,7 @@ CREATE TABLE dokument (
     putanja          VARCHAR(500) NOT NULL,
     verzija          INT NOT NULL DEFAULT 1,
     status           ENUM('AKTIVAN','ARHIVIRAN') NOT NULL DEFAULT 'AKTIVAN',
+    nivo_poverljivosti ENUM('JAVNO','INTERNO','POVERLJIVO','STROGO_POVERLJIVO') NOT NULL DEFAULT 'INTERNO',
     datum_kreiranja  DATETIME NOT NULL DEFAULT NOW(),
     predmet_id       INT NOT NULL,
     autor_id         INT NOT NULL,
@@ -348,6 +352,20 @@ CREATE TABLE istorija_faze_predmeta (
     korisnik_id INT NOT NULL,
     FOREIGN KEY (predmet_id) REFERENCES predmet(id),
     FOREIGN KEY (korisnik_id) REFERENCES korisnik(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ─── Log pristupa (evidencija deljenja) ─────────────────────────────────────
+CREATE TABLE log_pristupa (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    akcija          ENUM('DODELA','UKLANJANJE') NOT NULL,
+    datum_vreme     DATETIME NOT NULL DEFAULT NOW(),
+    dokument_id     INT NOT NULL,
+    korisnik_id     INT NOT NULL,
+    izvrsio_id      INT NOT NULL,
+    napomena        TEXT NULL,
+    FOREIGN KEY (dokument_id) REFERENCES dokument(id) ON DELETE CASCADE,
+    FOREIGN KEY (korisnik_id) REFERENCES korisnik(id),
+    FOREIGN KEY (izvrsio_id) REFERENCES korisnik(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ─── Završni izveštaj ────────────────────────────────────────────────────────

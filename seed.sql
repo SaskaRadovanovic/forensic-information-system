@@ -123,10 +123,18 @@ INSERT INTO istorija_dodele (datum_dodele, razlog_promene, zahtev_id, vestak_id,
 
 -- ─── Tagovi ─────────────────────────────────────────────────────────────────
 INSERT INTO tag (naziv, boja) VALUES
-('Hitno',       '#EF4444'),
-('DNK',         '#3B82F6'),
-('Balistika',   '#F97316'),
-('Finansije',   '#22C55E');
+('Hitno',           '#EF4444'),
+('DNK',             '#3B82F6'),
+('Balistika',       '#F97316'),
+('Finansije',       '#22C55E'),
+('Vatreno oruzje',  '#DC2626'),
+('Hladno oruzje',   '#9333EA'),
+('Bioloski trag',   '#059669'),
+('Foto-dokaz',      '#0EA5E9'),
+('Vestacenje',      '#8B5CF6'),
+('Zapisnik',        '#6366F1'),
+('Izvestaj',        '#14B8A6'),
+('Zbirni',          '#64748B');
 
 -- ─── Obaveštenja ────────────────────────────────────────────────────────────
 INSERT INTO obavestenje (sadrzaj, procitano, tip, datum_vreme, korisnik_id, zahtev_id) VALUES

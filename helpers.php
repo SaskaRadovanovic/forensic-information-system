@@ -119,6 +119,102 @@ function formatDatumVreme(?string $datetime): string
     return date('d.m.Y H:i', strtotime($datetime));
 }
 
+// ─── Labele za nivo poverljivosti ───────────────────────────────────────────
+
+/** Mapira enum nivo poverljivosti na čitljiv srpski tekst */
+function nivoPoverljivostiLabel(string $nivo): string
+{
+    $mapa = [
+        'JAVNO'             => 'Javno',
+        'INTERNO'           => 'Interno',
+        'POVERLJIVO'        => 'Poverljivo',
+        'STROGO_POVERLJIVO' => 'Strogo poverljivo',
+    ];
+    return $mapa[$nivo] ?? $nivo;
+}
+
+/** Mapira nivo poverljivosti na CSS klasu za badge */
+function nivoPoverljivostiBadge(string $nivo): string
+{
+    $mapa = [
+        'JAVNO'             => 'badge-green',
+        'INTERNO'           => 'badge-blue',
+        'POVERLJIVO'        => 'badge-yellow',
+        'STROGO_POVERLJIVO' => 'badge-red',
+    ];
+    return $mapa[$nivo] ?? 'badge-gray';
+}
+
+// ─── Poluautomatsko predlaganje tagova ──────────────────────────────────────
+
+/** Mapiranje tip dokumenta → nazivi predloženih tagova */
+function predloziTagovePoTipu(string $tipDokumenta): array
+{
+    $mapa = [
+        'Veštačenje'      => ['Vestacenje'],
+        'Fotografija'     => ['Foto-dokaz'],
+        'Zapisnik'        => ['Zapisnik'],
+        'Izveštaj'        => ['Izvestaj'],
+        'Zbirni izveštaj' => ['Izvestaj', 'Zbirni'],
+    ];
+    return $mapa[$tipDokumenta] ?? [];
+}
+
+/** Mapiranje ključna reč u opisu → nazivi predloženih tagova */
+function predloziTagovePoOpisu(string $opis): array
+{
+    $mapa = [
+        'pistolj'    => 'Vatreno oruzje',
+        'pištolj'    => 'Vatreno oruzje',
+        'puška'      => 'Vatreno oruzje',
+        'puska'      => 'Vatreno oruzje',
+        'oružje'     => 'Vatreno oruzje',
+        'oruzje'     => 'Vatreno oruzje',
+        'kalibar'    => 'Vatreno oruzje',
+        'municija'   => 'Vatreno oruzje',
+        'metak'      => 'Vatreno oruzje',
+        'nož'        => 'Hladno oruzje',
+        'noz'        => 'Hladno oruzje',
+        'mačeta'     => 'Hladno oruzje',
+        'maceta'     => 'Hladno oruzje',
+        'krv'        => 'Bioloski trag',
+        'dnk'        => 'DNK',
+        'dns'        => 'DNK',
+        'uzorak'     => 'Bioloski trag',
+        'bioloski'   => 'Bioloski trag',
+        'biološki'   => 'Bioloski trag',
+        'hitno'      => 'Hitno',
+        'urgent'     => 'Hitno',
+        'zurno'      => 'Hitno',
+        'žurno'      => 'Hitno',
+        'balistika'  => 'Balistika',
+        'balistič'   => 'Balistika',
+        'balistič'   => 'Balistika',
+        'finansij'   => 'Finansije',
+        'novac'      => 'Finansije',
+        'pranje'     => 'Finansije',
+        'racun'      => 'Finansije',
+        'račun'      => 'Finansije',
+    ];
+
+    $opisLower = mb_strtolower($opis, 'UTF-8');
+    $predlozeni = [];
+    foreach ($mapa as $kljucnaRec => $tagNaziv) {
+        if (mb_strpos($opisLower, $kljucnaRec) !== false) {
+            $predlozeni[$tagNaziv] = true;
+        }
+    }
+    return array_keys($predlozeni);
+}
+
+/** Kombinuje predloge iz tipa i opisa, vraca unikatne nazive tagova */
+function sviPredlozeniTagovi(string $tipDokumenta, string $opis): array
+{
+    $poTipu = predloziTagovePoTipu($tipDokumenta);
+    $poOpisu = predloziTagovePoOpisu($opis);
+    return array_unique(array_merge($poTipu, $poOpisu));
+}
+
 // ─── Labele za tip dokaza ───────────────────────────────────────────────────
 
 /** Mapira enum tip dokaza na čitljiv srpski tekst */

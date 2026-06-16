@@ -243,6 +243,32 @@ if ($page === 'analiza-dodela') {
             $stmt->bind_param('ii', $vestakId, $zahtevId);
             $stmt->execute();
             $stmt->close();
+
+            // Automatska dodela pristupa dokumentima predmeta vestaku
+            $stmtDok = $conn->prepare("SELECT id FROM dokument WHERE predmet_id = ?");
+            $stmtDok->bind_param('i', $zahtev['predmet_id']);
+            $stmtDok->execute();
+            $dokumentiPredmeta = $stmtDok->get_result();
+            $stmtInsert = $conn->prepare("INSERT IGNORE INTO pravo_pristupa (nivo_pristupa, korisnik_id, dokument_id) VALUES ('CITANJE', ?, ?)");
+            while ($dok = $dokumentiPredmeta->fetch_assoc()) {
+                $stmtInsert->bind_param('ii', $vestakId, $dok['id']);
+                $stmtInsert->execute();
+            }
+            $stmtInsert->close();
+            $stmtDok->close();
+
+            // Obaveštenje o pristupu dokumentima
+            $stmt = $conn->prepare("SELECT naziv FROM predmet WHERE id = ?");
+            $stmt->bind_param('i', $zahtev['predmet_id']);
+            $stmt->execute();
+            $predmetNaziv = $stmt->get_result()->fetch_assoc()['naziv'] ?? '';
+            $stmt->close();
+
+            $porukaPristup = 'Dodeljen vam je pristup dokumentima predmeta: ' . $predmetNaziv;
+            $stmt = $conn->prepare("INSERT INTO obavestenje (sadrzaj, tip, datum_vreme, korisnik_id) VALUES (?, 'PRISTUP', NOW(), ?)");
+            $stmt->bind_param('si', $porukaPristup, $vestakId);
+            $stmt->execute();
+            $stmt->close();
         }
 
         $conn->commit();
