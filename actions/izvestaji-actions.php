@@ -7,8 +7,6 @@
  * 2. Zbirni izveštaj o integritetu dokaza za predmet
  */
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
 // ─── Izveštaj o lancu čuvanja za pojedinačni dokaz ─────────────────────────
 if ($action === 'izvestaj-dokaz') {
     requireRole('TEHNICAR', 'ISTRAZITELJ', 'ADMINISTRATOR');

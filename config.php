@@ -12,13 +12,16 @@ session_start();
 // ─── Parametri baze podataka ────────────────────────────────────────────────
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_PASS', 'ftn');
 define('DB_NAME', 'forenzis');
 
 // ─── Upload konfiguracija ──────────────────────────────────────────────────
 define('UPLOAD_DIR', __DIR__ . '/uploads/');
 define('DOZVOLJENI_TIPOVI', ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']);
 define('MAX_VELICINA_FAJLA', 10 * 1024 * 1024); // 10MB
+
+// ─── Composer autoload ─────────────────────────────────────────────────────
+require_once __DIR__ . '/vendor/autoload.php';
 
 // ─── Konekcija ka MySQL bazi ────────────────────────────────────────────────
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);

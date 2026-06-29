@@ -183,7 +183,7 @@ $istorija = $stmt->get_result();
         if ($dokument['status'] !== 'ARHIVIRAN'):
             $tipDokumenta = $metapodaci['tipDokumenta'] ?? '';
             $opisDokumenta = $metapodaci['opis'] ?? '';
-            $predlozeniNazivi = sviPredlozeniTagovi($tipDokumenta, $opisDokumenta);
+            $predlozeniNazivi = sviPredlozeniTagovi($tipDokumenta, $opisDokumenta, $dokument['sadrzaj_tekst'] ?? '');
 
             // Filtriraj: prikaži samo predloge koji postoje u bazi i NISU već na dokumentu
             $predlozeniZaPrikaz = [];

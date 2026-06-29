@@ -89,6 +89,19 @@ if ($page === 'dokument-novi') {
             $stmt->close();
         }
 
+        // Ekstrakcija teksta iz PDF-a
+        $sadrzajTekst = '';
+        if ($putanja !== 'nema-fajla') {
+            $sadrzajTekst = ekstrahujTekstIzPdf(UPLOAD_DIR . $putanja);
+        }
+
+        if ($sadrzajTekst !== '') {
+            $stmtTekst = $conn->prepare("UPDATE dokument SET sadrzaj_tekst = ? WHERE id = ?");
+            $stmtTekst->bind_param('si', $sadrzajTekst, $dokumentId);
+            $stmtTekst->execute();
+            $stmtTekst->close();
+        }
+
         // Dodavanje predloženih tagova koje je korisnik odobrio
         $predlozeniTagovi = $_POST['predlozeni_tagovi'] ?? [];
         if (!empty($predlozeniTagovi)) {
@@ -103,8 +116,34 @@ if ($page === 'dokument-novi') {
             $stmtTag->close();
         }
 
+        // Poluautomatsko dodavanje tagova na osnovu sadržaja PDF-a
+        if ($sadrzajTekst !== '') {
+            $tagNaziviIzPdf = predloziTagovePoOpisu($sadrzajTekst);
+
+            if (!empty($tagNaziviIzPdf)) {
+                $placeholders = implode(',', array_fill(0, count($tagNaziviIzPdf), '?'));
+                $stmtTagFind = $conn->prepare("SELECT id FROM tag WHERE naziv IN ($placeholders)");
+                $stmtTagFind->bind_param(str_repeat('s', count($tagNaziviIzPdf)), ...$tagNaziviIzPdf);
+                $stmtTagFind->execute();
+                $tagResult = $stmtTagFind->get_result();
+
+                $stmtTagInsert = $conn->prepare("INSERT IGNORE INTO dokument_tag (dokument_id, tag_id) VALUES (?, ?)");
+                while ($tagRow = $tagResult->fetch_assoc()) {
+                    $stmtTagInsert->bind_param('ii', $dokumentId, $tagRow['id']);
+                    $stmtTagInsert->execute();
+                }
+                $stmtTagInsert->close();
+                $stmtTagFind->close();
+            }
+        }
+
         $conn->commit();
-        flashSuccess('Dokument uspešno kreiran.');
+
+        if (!empty($sadrzajTekst) && !empty($tagNaziviIzPdf)) {
+            flashSuccess('Dokument uspešno kreiran. Sistem je automatski predložio tagove na osnovu sadržaja dokumenta — proverite ih na stranici detalja.');
+        } else {
+            flashSuccess('Dokument uspešno kreiran.');
+        }
         header("Location: ?page=dokument-detalji&id={$dokumentId}");
         exit;
     } catch (Exception $e) {
@@ -237,6 +276,35 @@ if ($page === 'dokument-izmeni') {
             $stmt->bind_param('si', $opis, $dokumentId);
             $stmt->execute();
             $stmt->close();
+        }
+
+        // Ako je uploadovan novi fajl, reekstrahuj tekst i dodaj tagove
+        if ($novaPutanja !== $dokument['putanja']) {
+            $sadrzajTekst = ekstrahujTekstIzPdf(UPLOAD_DIR . $novaPutanja);
+            $stmtTekst = $conn->prepare("UPDATE dokument SET sadrzaj_tekst = ? WHERE id = ?");
+            $stmtTekst->bind_param('si', $sadrzajTekst, $dokumentId);
+            $stmtTekst->execute();
+            $stmtTekst->close();
+
+            if ($sadrzajTekst !== '') {
+                $tagNaziviIzPdf = predloziTagovePoOpisu($sadrzajTekst);
+
+                if (!empty($tagNaziviIzPdf)) {
+                    $placeholders = implode(',', array_fill(0, count($tagNaziviIzPdf), '?'));
+                    $stmtTagFind = $conn->prepare("SELECT id FROM tag WHERE naziv IN ($placeholders)");
+                    $stmtTagFind->bind_param(str_repeat('s', count($tagNaziviIzPdf)), ...$tagNaziviIzPdf);
+                    $stmtTagFind->execute();
+                    $tagResult = $stmtTagFind->get_result();
+
+                    $stmtTagInsert = $conn->prepare("INSERT IGNORE INTO dokument_tag (dokument_id, tag_id) VALUES (?, ?)");
+                    while ($tagRow = $tagResult->fetch_assoc()) {
+                        $stmtTagInsert->bind_param('ii', $dokumentId, $tagRow['id']);
+                        $stmtTagInsert->execute();
+                    }
+                    $stmtTagInsert->close();
+                    $stmtTagFind->close();
+                }
+            }
         }
 
         $conn->commit();

@@ -9,8 +9,6 @@
  * Obrazac: isti TCPDF stil kao actions/izvestaji-actions.php (kolege).
  * Font: freeserif, margine: 15mm, tabele: sivi header (230,230,230), Output 'D'.
  */
-require_once __DIR__ . '/../vendor/autoload.php';
-
 requireLogin();
 requireRole('ISTRAZITELJ', 'ADMINISTRATOR');
 

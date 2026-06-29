@@ -32,6 +32,7 @@ $dozvoljeneStranice = [
     'analitika',
     'istorija-predmeta',
     'korisnik-novi',
+    'izvestaj-dokumentacije',
 ];
 
 // Ako stranica nije u whitelist-u, prikaži 404
@@ -100,6 +101,11 @@ if (in_array($action, ['izvestaj-dokaz', 'zbirni-izvestaj'])) {
 
 if ($action === 'izvestaj-analize-pdf') {
     require __DIR__ . '/actions/izvestaj-analize-export.php';
+    exit;
+}
+
+if ($action === 'izvestaj-dokumentacije-pdf') {
+    require __DIR__ . '/actions/izvestaj-dokumentacije-export.php';
     exit;
 }
 

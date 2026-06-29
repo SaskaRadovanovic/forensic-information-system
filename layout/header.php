@@ -736,6 +736,7 @@ if ($uloga === 'ADMINISTRATOR'):
     <a href="?page=korisnik-novi" class="nav-item <?= $page === 'korisnik-novi' ? 'active' : '' ?>">Novi korisnik</a>
     <a href="?page=izvestaji" class="nav-item <?= $page === 'izvestaji' ? 'active' : '' ?>">Izveštaji</a>
     <a href="?page=izvestaj-analize" class="nav-item <?= $page === 'izvestaj-analize' ? 'active' : '' ?>">Izveštaj analiza</a>
+    <a href="?page=izvestaj-dokumentacije" class="nav-item <?= $page === 'izvestaj-dokumentacije' ? 'active' : '' ?>">Izveštaj dokumentacije</a>
     <a href="?page=analitika" class="nav-item <?= $page === 'analitika' ? 'active' : '' ?>">Analitika</a>
 
     <div class="sidebar-section">Predmeti</div>
@@ -764,6 +765,7 @@ if ($uloga === 'ADMINISTRATOR'):
 
     <div class="sidebar-section">Izveštaji</div>
     <a href="?page=izvestaj-analize" class="nav-item <?= $page === 'izvestaj-analize' ? 'active' : '' ?>">Izveštaj analiza</a>
+    <a href="?page=izvestaj-dokumentacije" class="nav-item <?= $page === 'izvestaj-dokumentacije' ? 'active' : '' ?>">Izveštaj dokumentacije</a>
 
     <div class="sidebar-section">Sistem</div>
     <a href="?page=obavestenja" class="nav-item <?= $page === 'obavestenja' ? 'active' : '' ?>">Obaveštenja<?php if ($neprocitanaBroj > 0): ?> <span class="nav-badge"><?= $neprocitanaBroj ?></span><?php endif; ?></a>

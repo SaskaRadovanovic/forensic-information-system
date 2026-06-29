@@ -89,6 +89,7 @@ CREATE TABLE dokument (
     id               INT AUTO_INCREMENT PRIMARY KEY,
     naziv            VARCHAR(255) NOT NULL,
     putanja          VARCHAR(500) NOT NULL,
+    sadrzaj_tekst    LONGTEXT NULL,
     verzija          INT NOT NULL DEFAULT 1,
     status           ENUM('AKTIVAN','ARHIVIRAN') NOT NULL DEFAULT 'AKTIVAN',
     nivo_poverljivosti ENUM('JAVNO','INTERNO','POVERLJIVO','STROGO_POVERLJIVO') NOT NULL DEFAULT 'INTERNO',

@@ -69,10 +69,12 @@ if ($filterStatus !== '') {
 
 if ($filterPretraga !== '') {
     $sql .= " AND (dok.naziv LIKE CONCAT('%', ?, '%')
-        OR EXISTS (SELECT 1 FROM metapodatak m WHERE m.dokument_id = dok.id AND m.vrednost LIKE CONCAT('%', ?, '%')))";
+        OR EXISTS (SELECT 1 FROM metapodatak m WHERE m.dokument_id = dok.id AND m.vrednost LIKE CONCAT('%', ?, '%'))
+        OR dok.sadrzaj_tekst LIKE CONCAT('%', ?, '%'))";
     $params[] = $filterPretraga;
     $params[] = $filterPretraga;
-    $types .= 'ss';
+    $params[] = $filterPretraga;
+    $types .= 'sss';
 }
 
 if ($filterTag > 0) {
@@ -162,7 +164,7 @@ function sortLink(string $kolona, string $label, string $currentSort, string $cu
 
         <div class="form-group" style="margin-bottom:0;">
             <label>Pretraga</label>
-            <input type="text" name="q" value="<?= e($filterPretraga) ?>" placeholder="Naziv ili opis..." style="min-width:180px;">
+            <input type="text" name="q" value="<?= e($filterPretraga) ?>" placeholder="Naziv, opis ili sadržaj dokumenta..." style="min-width:180px;">
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
