@@ -110,6 +110,13 @@ INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id)
  'Istraga ubojstva u Nišu. Veštačenje završeno, zaključak donet. Predmet zatvoren.',
  'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-12-01 09:00:00', 7);
 
+-- ─── Predmet 19 — Marko (id=2), spreman za prelaz ANALIZA_DOKAZA → DONOSENJE_ZAKLJUCKA ──
+-- Svi zahtevi za analizu su ZAVRSEN, pa je prelaz u sledeću fazu odmah moguć
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+('Iznuda — slučaj Ranković',
+ 'Istraga iznude i pretnji nad vlasnikom lokala u Beogradu. Osumnjičeni identifikovan na osnovu audio snimka pretnji. Analiza zapisa završena, predmet spreman za donošenje zaključka.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-03-25 09:00:00', 2);
+
 -- ─── Dokazi ─────────────────────────────────────────────────────────────────
 INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_pronalaska, lokacija_pronalaska, lokacija_skladistenja, status, predmet_id, tehnicar_id) VALUES
 ('DOK-2026-001', 'Krv na mestu zločina',    'Uzorak krvi pronađen na ulazu',        'BIOLOSKI_TRAG', '2026-01-16 10:00:00', '2026-01-15 22:30:00', 'Knez Mihailova 24',   'Sef A-12',    'U_SKLADISTU',       1, 3),
@@ -132,6 +139,10 @@ INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_p
 ('DOK-2026-013', 'Video zapis sa nadzorne kamere', 'Snimak napada na policijskog službenika Vukića uhvaćen kamerom ispred ulaza zgrade', 'UZORAK',   '2026-04-19 08:00:00', '2026-04-18 21:40:00', 'Ul. Vojvode Stepe 12, ulaz zgrade', 'Digitalni arhiv D-01', 'IZDATO_ZA_ANALIZU', 9, 3),
 ('DOK-2026-014', 'Izveštaj hitne pomoći',         'Medicinsko-forenzički izveštaj o povredama policajca Vukića',                        'DOKUMENT',  '2026-04-19 10:00:00', '2026-04-18 22:30:00', 'KC Srbije, Urgentni centar',        'Sef F-01',             'IZDATO_ZA_ANALIZU', 9, 3);
 
+-- Dokaz za predmet 19 (Iznuda — Ranković, ANALIZA_DOKAZA) — analiza završena
+INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_pronalaska, lokacija_pronalaska, lokacija_skladistenja, status, predmet_id, tehnicar_id) VALUES
+('DOK-2026-015', 'Audio snimak pretnji', 'Snimak telefonskog razgovora sa pretnjama, dostavljen od strane žrtve', 'UZORAK', '2026-03-26 09:00:00', '2026-03-25 18:00:00', 'Lokal žrtve, Vračar', 'Digitalni arhiv D-02', 'IZDATO_ZA_ANALIZU', 19, 3);
+
 -- ─── ISA podtipovi dokaza ───────────────────────────────────────────────────
 INSERT INTO bioloski_trag (id_dokaz, vrsta_traga, nacin_uzorkovanja, uslovi_cuvanja, kolicina) VALUES
 (1, 'Krv', 'Bris sterilnim štapićem', 'Rashladni uslovi, 4°C', '2 ml'),
@@ -153,7 +164,8 @@ INSERT INTO uzorak (id_dokaz, vrsta_uzorka, kolicina, jedinica_mere, nacin_uzork
 (7, 'Otisci prstiju', '3', 'komada', 'Prašak + folija', 'Suvo, sobna temperatura'),
 (10, 'Digitalni medij', '1', 'komad', 'Zaplenjen u kesi za dokaze', 'Suvo, antistatik zaštita'),
 (12, 'Tekstilno vlakno', '1', 'komad', 'Pinceta + papirna koverta', 'Suvo, sobna temperatura'),
-(13, 'Video zapis', '1', 'fajl', 'Kopija sa SD kartice nadzorne kamere', 'Digitalni arhiv, enkriptovano');
+(13, 'Video zapis', '1', 'fajl', 'Kopija sa SD kartice nadzorne kamere', 'Digitalni arhiv, enkriptovano'),
+(15, 'Audio zapis', '1', 'fajl', 'Kopija sa telefona žrtve', 'Digitalni arhiv, enkriptovano');
 
 -- ─── Lanac čuvanja ──────────────────────────────────────────────────────────
 INSERT INTO lanac_cuvanja (akcija, datum_vreme, napomena, dokaz_id, tehnicar_id) VALUES
@@ -189,7 +201,11 @@ INSERT INTO lanac_cuvanja (akcija, datum_vreme, napomena, dokaz_id, tehnicar_id)
 ('Izdavanje dokaza', '2026-04-19 09:00:00', 'Izdato na digitalnu analizu',     13, 3),
 ('Prijem dokaza',    '2026-04-19 10:00:00', 'Dokaz zaprimljen u skladište',    14, 3),
 ('Skladištenje',     '2026-04-19 10:15:00', 'Smešten u sef F-01',              14, 3),
-('Izdavanje dokaza', '2026-04-19 11:00:00', 'Izdato veštaku na analizu',       14, 3);
+('Izdavanje dokaza', '2026-04-19 11:00:00', 'Izdato veštaku na analizu',       14, 3),
+-- Dokaz 15 — predmet 19, izdat i analiza završena
+('Prijem dokaza',    '2026-03-26 09:00:00', 'Dokaz zaprimljen u skladište',    15, 3),
+('Skladištenje',     '2026-03-26 09:15:00', 'Smešten u digitalni arhiv D-02',  15, 3),
+('Izdavanje dokaza', '2026-03-26 10:00:00', 'Izdato veštaku na analizu',       15, 3);
 
 -- ─── Zahtev za dokaz ────────────────────────────────────────────────────────
 INSERT INTO zahtev_za_dokaz (tip, razlog, status, datum_kreiranja, dokaz_id, podnosilac_id) VALUES
@@ -200,7 +216,9 @@ INSERT INTO zahtev_za_dokaz (tip, razlog, status, datum_kreiranja, dokaz_id, pod
 INSERT INTO zahtev_za_analizu (opis, tip_analize, datum_kreiranja, datum_pocetka, rok, status, istrazitelj_id, dokaz_id, predmet_id, vestak_id) VALUES
 ('Balistička analiza pištolja CZ 99 — utvrditi da li je oružje korišćeno u zločinu', 'BALISTICKA', '2026-02-12 10:00:00', '2026-02-13 08:00:00', '2026-03-01 00:00:00', 'U_TOKU',  2, 2,  2, 4),
 ('DNK analiza krvi sa mesta zločina',                                                  'DNK',        '2026-01-17 09:00:00', NULL,                   '2026-02-15 00:00:00', 'KREIRAN', 2, 1,  1, NULL),
-('Digitalna analiza video zapisa sa nadzorne kamere radi identifikacije napadača',     'DIGITALNA',  '2026-04-20 09:00:00', NULL,                   '2026-05-15 00:00:00', 'KREIRAN', 2, 13, 9, NULL);
+('Digitalna analiza video zapisa sa nadzorne kamere radi identifikacije napadača',     'DIGITALNA',  '2026-04-20 09:00:00', NULL,                   '2026-05-15 00:00:00', 'KREIRAN', 2, 13, 9, NULL),
+-- Zahtev 4 — predmet 19, analiza ZAVRSENA (omogućava prelaz u DONOSENJE_ZAKLJUCKA)
+('Analiza audio zapisa radi identifikacije glasa osumnjičenog i utvrđivanja sadržaja pretnji', 'DIGITALNA', '2026-03-26 10:30:00', '2026-03-27 08:00:00', '2026-04-10 00:00:00', 'ZAVRSEN', 2, 15, 19, 4);
 
 -- ─── Istorija statusa analize ───────────────────────────────────────────────
 INSERT INTO istorija_statusa_analize (stari_status, novi_status, datum_vreme, napomena, zahtev_id, inicirao_id) VALUES
@@ -208,11 +226,20 @@ INSERT INTO istorija_statusa_analize (stari_status, novi_status, datum_vreme, na
 ('KREIRAN',  'DODELJEN', '2026-02-12 10:30:00', 'Dodeljen veštaku',       1, 2),
 ('DODELJEN', 'U_TOKU',   '2026-02-13 08:00:00', 'Veštak započeo analizu', 1, 4),
 (NULL,       'KREIRAN',  '2026-01-17 09:00:00', 'Zahtev kreiran',         2, 2),
-(NULL,       'KREIRAN',  '2026-04-20 09:00:00', 'Zahtev kreiran',         3, 2);
+(NULL,       'KREIRAN',  '2026-04-20 09:00:00', 'Zahtev kreiran',         3, 2),
+(NULL,       'KREIRAN',  '2026-03-26 10:30:00', 'Zahtev kreiran',         4, 2),
+('KREIRAN',  'DODELJEN', '2026-03-26 11:00:00', 'Dodeljen veštaku',       4, 2),
+('DODELJEN', 'U_TOKU',   '2026-03-27 08:00:00', 'Veštak započeo analizu', 4, 4),
+('U_TOKU',   'ZAVRSEN',  '2026-04-02 15:00:00', 'Analiza završena, rezultati dostavljeni', 4, 4);
 
 -- ─── Istorija dodele ────────────────────────────────────────────────────────
 INSERT INTO istorija_dodele (datum_dodele, razlog_promene, zahtev_id, vestak_id, dodelio_id) VALUES
-('2026-02-12 10:30:00', NULL, 1, 4, 2);
+('2026-02-12 10:30:00', NULL, 1, 4, 2),
+('2026-03-26 11:00:00', NULL, 4, 4, 2);
+
+-- ─── Rezultat analize ───────────────────────────────────────────────────────
+INSERT INTO rezultat_analize (sadrzaj, datum_unosa, verifikovan, zahtev_id, uneao_id) VALUES
+('Analiza audio zapisa potvrdila je podudarnost glasa sa osumnjičenim sa preciznošću od 94%. Identifikovane su tri jasne pretnje upućene žrtvi u periodu od dve nedelje.', '2026-04-02 15:00:00', 1, 4, 4);
 
 -- ─── Istorija faza predmeta ─────────────────────────────────────────────────
 -- Predmet 1 (ANALIZA_DOKAZA, otvoren 2026-01-14)
@@ -322,6 +349,12 @@ INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) 
 ('ANALIZA_DOKAZA',      '2025-12-22 09:00:00', 18, 7),
 ('DONOSENJE_ZAKLJUCKA', '2026-01-05 11:00:00', 18, 7),
 ('ZATVOREN_SLUCAJ',     '2026-01-20 15:00:00', 18, 7);
+
+-- Predmet 19 (ANALIZA_DOKAZA, otvoren 2026-03-25) — spreman za DONOSENJE_ZAKLJUCKA
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-03-25 09:00:00', 19, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-03-26 08:30:00', 19, 2),
+('ANALIZA_DOKAZA',      '2026-03-27 09:00:00', 19, 2);
 
 -- ─── Tagovi ─────────────────────────────────────────────────────────────────
 INSERT INTO tag (naziv, boja) VALUES

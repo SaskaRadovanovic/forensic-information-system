@@ -27,7 +27,6 @@ $dozvoljeneStranice = [
     'analize', 'analiza-detalji', 'analiza-nova', 'analiza-izmeni',
     'analiza-dodela', 'analiza-rezultat',
     'obavestenja',
-    'izvestaji',
     'izvestaj-analize',
     'analitika',
     'istorija-predmeta',

@@ -734,7 +734,6 @@ if ($uloga === 'ADMINISTRATOR'):
     <div class="sidebar-section">Administracija</div>
     <a href="?page=dashboard" class="nav-item <?= $page === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
     <a href="?page=korisnik-novi" class="nav-item <?= $page === 'korisnik-novi' ? 'active' : '' ?>">Novi korisnik</a>
-    <a href="?page=izvestaji" class="nav-item <?= $page === 'izvestaji' ? 'active' : '' ?>">Izveštaji</a>
     <a href="?page=izvestaj-analize" class="nav-item <?= $page === 'izvestaj-analize' ? 'active' : '' ?>">Izveštaj analiza</a>
     <a href="?page=izvestaj-dokumentacije" class="nav-item <?= $page === 'izvestaj-dokumentacije' ? 'active' : '' ?>">Izveštaj dokumentacije</a>
     <a href="?page=analitika" class="nav-item <?= $page === 'analitika' ? 'active' : '' ?>">Analitika</a>
