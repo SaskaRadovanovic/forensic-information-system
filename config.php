@@ -12,7 +12,7 @@ session_start();
 // ─── Parametri baze podataka ────────────────────────────────────────────────
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_PASS', 'ftn');
 define('DB_NAME', 'forenzis');
 
 // ─── Upload konfiguracija ──────────────────────────────────────────────────
