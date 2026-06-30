@@ -1,0 +1,12 @@
+{
+  "name": "forenziis-ws-server",
+  "version": "1.0.0",
+  "description": "Mali Node.js servis za instant (live) notifikacije - WebSocket (8090) + interni HTTP push endpoint (8091).",
+  "main": "ws_server.js",
+  "scripts": {
+    "start": "node ws_server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

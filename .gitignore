@@ -1,0 +1,8 @@
+# Uploadovani fajlovi (cuvaj samo .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# Okruzenje
+.env
+node_modules/
+.next/

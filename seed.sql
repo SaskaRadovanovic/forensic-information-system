@@ -1,0 +1,377 @@
+-- ============================================================================
+-- ForenzIS — Test podaci (seed)
+--
+-- Lozinka za sve korisnike: password123
+-- Hash generisan sa: password_hash('password123', PASSWORD_BCRYPT)
+-- ============================================================================
+
+-- ─── Korisnici ──────────────────────────────────────────────────────────────
+-- Lozinka za sve korisnike: password123
+INSERT INTO korisnik (ime, prezime, email, kor_ime, lozinka_hash, uloga) VALUES
+('Admin',    'Adminović',  'admin@fis.rs',       'admin',       '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'ADMINISTRATOR'),
+('Marko',    'Petrović',   'marko@fis.rs',       'marko',       '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'ISTRAZITELJ'),
+('Jelena',   'Marinković', 'tehnicar@fis.rs',    'tehnicar',    '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'TEHNICAR'),
+('Dr. Dejan','Nikolić',    'vestak@fis.rs',      'vestak',      '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'VESTAK'),
+('Stefan',   'Jovanović',  'stefan@fis.rs',      'stefan',      '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'ISTRAZITELJ'),
+('Milica',   'Đorđević',   'milica@fis.rs',      'milica',      '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'ISTRAZITELJ'),
+('Nikola',   'Stojanović', 'nikola@fis.rs',      'nikola',      '$2y$12$owdIswS3HJ9x7jlvRkF54eaVowv7BHATRG67t6ynX38xTI.ERrXHK', 'ISTRAZITELJ');
+
+-- ─── ISA profili ────────────────────────────────────────────────────────────
+
+-- Tehničar za dokaze (korisnik id=3, Jelena)
+INSERT INTO tehnicar_za_dokaze (id_korisnik, id_td, odeljenje) VALUES
+(3, 'TD-001', 'Odeljenje za dokaze');
+
+-- Istražitelji (id=2 Marko, id=5 Stefan, id=6 Milica, id=7 Nikola)
+INSERT INTO istrazitelj (id_korisnik, broj_znacke, odeljenje) VALUES
+(2, 'IZ-001', 'Kriminalistika'),
+(5, 'IZ-002', 'Kriminalistika'),
+(6, 'IZ-003', 'Forenzika'),
+(7, 'IZ-004', 'Forenzika');
+
+-- Veštak (korisnik id=4, Dr. Dejan)
+INSERT INTO vestak (id_korisnik, id_vestak, specijalnost, sertifikat_br) VALUES
+(4, 'VS-001', 'DNK analiza', 'SRT-2024-001');
+
+-- ─── Predmeti (10 raznolikih predmeta sa svim fazama) ─────────────────────
+-- istrazitelj_id = 2 (Marko Petrović)
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+-- Predmet 1 — ima vezane dokaze i analize (ne brisati)
+('Ubistvo na Knez Mihailovoj — slučaj Nikolić',
+ 'Istraga ubojstva pronađenog u stanu na adresi Knez Mihailova 15. Žrtva: Dragan Nikolić, 45 god. Sumnja na ubojstvo hladnim oružjem. Osumnjičeni uhapšen.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-01-14 09:00:00', 2),
+-- Predmet 2 — ima vezane dokaze i analize (ne brisati)
+('Ubistvo — Novi Sad, naselje Liman',
+ 'Istraga ubojstva u Novom Sadu. Žrtva pronađena u parku na Limanu. Forenzička ekipa prikupila biološke tragove i oružje.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-02-10 14:30:00', 2),
+-- Predmet 3 — ima vezane dokaze i analize (ne brisati)
+('Falsifikovanje dokumenata — slučaj Peković',
+ 'Istraga falsifikovanja ličnih dokumenata i finansijske prevare. Osumnjičeni: Zoran Peković. Konfiskovana lična karta, pasoš i vozačka dozvola.',
+ 'AKTIVAN', 'DONOSENJE_ZAKLJUCKA', '2026-01-28 11:00:00', 2),
+-- Predmet 4 — bez vezanih podataka, različita faza
+('Razbojništvo — benzinska pumpa Novi Beograd',
+ 'Oružana pljačka benzinske pumpe na Novom Beogradu. Počinilac neidentifikovan, snimci kamera obezbeđeni. Oštećena imovina procenjena na 450.000 RSD.',
+ 'AKTIVAN', 'OTVOREN_SLUCAJ', '2026-03-02 09:00:00', 2),
+-- Predmet 5 — bez vezanih podataka
+('Narko-diler — zaplena heroina, Zemun',
+ 'Zaplena 2,3 kg heroina u stanu u Zemunu. Tri osumnjičena lica privedena. Istraga u toku radi otkrivanja mreže snabdevanja.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-02-10 10:00:00', 2),
+-- Predmet 6 — bez vezanih podataka
+('Digitalna prevara — internet kupovina',
+ 'Serija prevara putem lažnih oglasa na internetu. Oštećeno 14 lica, ukupna šteta 1.2 miliona RSD. IP adrese prikupljene, identitet počinioca utvrđen.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-01-20 08:00:00', 2),
+-- Predmet 7 — bez vezanih podataka
+('Teška krađa vozila — Palilula',
+ 'Organizovana krađa 5 vozila u roku od mesec dana na Paliluli. Vozila pronađena u Mađarskoj. Počinioci identifikovani i uhapšeni, predmet u završnoj fazi.',
+ 'AKTIVAN', 'DONOSENJE_ZAKLJUCKA', '2025-11-05 09:00:00', 2),
+-- Predmet 8 — ZATVOREN
+('Požar — magacin u Surčinu (arson)',
+ 'Namerni požar u magacinu tekstilne robe. Šteta procenjena na 8 miliona RSD. Hemijska analiza ostataka potvrdila upotrebu akceleratora. Predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-09-14 09:00:00', 2),
+-- Predmet 9 — bez vezanih podataka
+('Napad na službeno lice — policajac Vukić',
+ 'Napad na policijskog službenika tokom hapšenja. Osumnjičeni Slobodan Mrđa pritvoren. Medicinsko veštačenje i video-snimci prikupljeni.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-04-18 09:00:00', 2),
+-- Predmet 10 — ZATVOREN
+('Nestanak osobe — Milena Đorđević',
+ 'Istraga nestanka Milene Đorđević (32), nestala 15.03.2026. Pronađeni lični predmeti, istraga u završnoj fazi. Predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2026-03-16 09:00:00', 2);
+
+-- ─── Predmeti — Stefan Jovanović (id=5) ───────────────────────────────────
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+('Krađa u muzeju — eksponat iz bronzanog doba',
+ 'Nestanak artefakta iz Narodnog muzeja. Snimci nadzornih kamera prikupljeni, suspect identifikovan.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-03-10 09:00:00', 5),
+('Ubistvo — restoran Skadarlija',
+ 'Ubistvo vlasnika restorana. Forenzički tim prikupio biološke tragove. Istraga u fazi analize.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-02-01 10:00:00', 5),
+('Prevara osiguravajućeg društva — slučaj Kovač',
+ 'Lažno prijavljen udes radi naplate osiguranja. Dokazi prikupljeni i analizirani, predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-10-15 09:00:00', 5);
+
+-- ─── Predmeti — Milica Đorđević (id=6) ───────────────────────────────────
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+('Nasilje u porodici — slučaj Marić',
+ 'Prijava nasilja u porodici. Istraga u toku, svedoci saslušani.',
+ 'AKTIVAN', 'OTVOREN_SLUCAJ', '2026-05-20 09:00:00', 6),
+('Otmica — slučaj Savić',
+ 'Otmica maloletnog lica, osumnjičeni identifikovan. Predmet u fazi donošenja zaključka.',
+ 'AKTIVAN', 'DONOSENJE_ZAKLJUCKA', '2026-01-08 08:00:00', 6),
+('Kompjuterska prevara — phishing kampanja',
+ 'Organizovana phishing kampanja. Oštećeno 38 lica. Počinioci osuđeni, predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-08-12 09:00:00', 6);
+
+-- ─── Predmeti — Nikola Stojanović (id=7) ──────────────────────────────────
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+('Šverc cigareta — granični prelaz Horgoš',
+ 'Zaplena 4000 paklica cigareta bez akciznih markica. Dvojica osumnjičenih privedena.',
+ 'AKTIVAN', 'PRIKUPLJANJE_DOKAZA', '2026-04-05 09:00:00', 7),
+('Ubistvo — slučaj Ilić, Niš',
+ 'Istraga ubojstva u Nišu. Veštačenje završeno, zaključak donet. Predmet zatvoren.',
+ 'ZATVOREN', 'ZATVOREN_SLUCAJ', '2025-12-01 09:00:00', 7);
+
+-- ─── Predmet 19 — Marko (id=2), spreman za prelaz ANALIZA_DOKAZA → DONOSENJE_ZAKLJUCKA ──
+-- Svi zahtevi za analizu su ZAVRSEN, pa je prelaz u sledeću fazu odmah moguć
+INSERT INTO predmet (naziv, opis, status, faza, datum_otvaranja, istrazitelj_id) VALUES
+('Iznuda — slučaj Ranković',
+ 'Istraga iznude i pretnji nad vlasnikom lokala u Beogradu. Osumnjičeni identifikovan na osnovu audio snimka pretnji. Analiza zapisa završena, predmet spreman za donošenje zaključka.',
+ 'AKTIVAN', 'ANALIZA_DOKAZA', '2026-03-25 09:00:00', 2);
+
+-- ─── Dokazi ─────────────────────────────────────────────────────────────────
+INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_pronalaska, lokacija_pronalaska, lokacija_skladistenja, status, predmet_id, tehnicar_id) VALUES
+('DOK-2026-001', 'Krv na mestu zločina',    'Uzorak krvi pronađen na ulazu',        'BIOLOSKI_TRAG', '2026-01-16 10:00:00', '2026-01-15 22:30:00', 'Knez Mihailova 24',   'Sef A-12',    'U_SKLADISTU',       1, 3),
+('DOK-2026-002', 'Pištolj CZ 99',           'Poluautomatski pištolj, 9mm',          'ORUZJE',         '2026-02-11 08:00:00', '2026-02-10 18:00:00', 'Liman, park',         'Sef B-03',    'IZDATO_ZA_ANALIZU', 2, 3),
+('DOK-2026-003', 'Lažna faktura',            'Falsifikovana faktura za konsalting',  'DOKUMENT',       '2026-03-21 09:00:00', '2026-03-20 15:00:00', 'Kancelarija osumnjičenog', 'Sef C-07', 'U_SKLADISTU',      3, 3),
+('DOK-2026-004', 'Uzorak vlakana sa odeće',  'Vlakna pronađena na žrtvi',            'UZORAK',         '2026-02-12 11:00:00', '2026-02-11 09:00:00', 'Liman, stan žrtve',   'Sef B-05',    'U_SKLADISTU',       2, 3),
+('DOK-2026-005', 'Nož sa tragovima krvi',    'Kuhinjski nož pronađen pored žrtve — pokvaren lanac čuvanja', 'ORUZJE', '2026-04-20 14:00:00', '2026-04-19 23:15:00', 'Liman, park, klupa br. 7', 'Sef D-01', 'VRACENO', 5, 3),
+-- Dokazi za predmet 1 (Ubistvo Knez Mihailova, ANALIZA_DOKAZA) — u skladištu, spremni za analizu
+('DOK-2026-006', 'Dlake sa mesta zločina',   'Dlake pronađene na odeći žrtve, moguće pripadaju osumnjičenom',       'BIOLOSKI_TRAG', '2026-01-17 09:00:00', '2026-01-15 23:00:00', 'Knez Mihailova 24, spavaća soba',  'Sef A-14', 'U_SKLADISTU', 1, 3),
+('DOK-2026-007', 'Otisci prstiju sa brave',   'Latentni otisci prstiju skinuti sa brave ulaznih vrata',              'UZORAK',         '2026-01-17 10:30:00', '2026-01-15 23:30:00', 'Knez Mihailova 24, ulazna vrata',  'Sef A-15', 'U_SKLADISTU', 1, 3),
+-- Dokazi za predmet 2 (Ubistvo Novi Sad, ANALIZA_DOKAZA) — u skladištu, spremni za analizu
+('DOK-2026-008', 'Čaura 9mm',                 'Čaura pronađena 3m od žrtve, moguće ispaljena iz CZ 99',             'ORUZJE',         '2026-02-11 09:00:00', '2026-02-10 18:30:00', 'Liman, park, staza',               'Sef B-06', 'U_SKLADISTU', 2, 3),
+('DOK-2026-009', 'Krv sa klupe',              'Uzorak krvi sa klupe pored mesta zločina',                           'BIOLOSKI_TRAG',  '2026-02-11 10:00:00', '2026-02-10 19:00:00', 'Liman, park, klupa br. 3',         'Sef B-07', 'U_SKLADISTU', 2, 3),
+-- Dokazi za predmet 6 (Digitalna prevara, ANALIZA_DOKAZA) — u skladištu, spremni za analizu
+('DOK-2026-010', 'Hard disk osumnjičenog',    'Seagate 1TB HDD zaplenjen iz stana osumnjičenog',                    'UZORAK',         '2026-01-22 08:00:00', '2026-01-21 14:00:00', 'Stan osumnjičenog, Voždovac',      'Sef E-01', 'U_SKLADISTU', 6, 3),
+('DOK-2026-011', 'Štampani mejlovi',          'Odštampana email prepiska između osumnjičenog i žrtava',             'DOKUMENT',       '2026-01-22 09:00:00', '2026-01-21 14:30:00', 'Stan osumnjičenog, Voždovac',      'Sef E-02', 'U_SKLADISTU', 6, 3),
+-- Dokaz sa pokvarenim lancem čuvanja — za demonstraciju kompromitovanja pri verifikaciji (predmet 1)
+('DOK-2026-012', 'Komad tkanine sa tragovima', 'Parče tkanine pronađeno na mestu zločina — sumnja na kontaminaciju', 'UZORAK',        '2026-01-18 11:00:00', '2026-01-15 21:00:00', 'Knez Mihailova 24, hodnik',        'Sef A-16', 'U_SKLADISTU', 1, 3),
+-- Dokazi za predmet 9 (Napad na službeno lice, PRIKUPLJANJE_DOKAZA) — svi IZDATO_ZA_ANALIZU, za testiranje prelaza faze
+('DOK-2026-013', 'Video zapis sa nadzorne kamere', 'Snimak napada na policijskog službenika Vukića uhvaćen kamerom ispred ulaza zgrade', 'UZORAK',   '2026-04-19 08:00:00', '2026-04-18 21:40:00', 'Ul. Vojvode Stepe 12, ulaz zgrade', 'Digitalni arhiv D-01', 'IZDATO_ZA_ANALIZU', 9, 3),
+('DOK-2026-014', 'Izveštaj hitne pomoći',         'Medicinsko-forenzički izveštaj o povredama policajca Vukića',                        'DOKUMENT',  '2026-04-19 10:00:00', '2026-04-18 22:30:00', 'KC Srbije, Urgentni centar',        'Sef F-01',             'IZDATO_ZA_ANALIZU', 9, 3);
+
+-- Dokaz za predmet 19 (Iznuda — Ranković, ANALIZA_DOKAZA) — analiza završena
+INSERT INTO dokaz (sifra_dokaza, naziv, opis, tip_dokaza, datum_prijema, datum_pronalaska, lokacija_pronalaska, lokacija_skladistenja, status, predmet_id, tehnicar_id) VALUES
+('DOK-2026-015', 'Audio snimak pretnji', 'Snimak telefonskog razgovora sa pretnjama, dostavljen od strane žrtve', 'UZORAK', '2026-03-26 09:00:00', '2026-03-25 18:00:00', 'Lokal žrtve, Vračar', 'Digitalni arhiv D-02', 'IZDATO_ZA_ANALIZU', 19, 3);
+
+-- ─── ISA podtipovi dokaza ───────────────────────────────────────────────────
+INSERT INTO bioloski_trag (id_dokaz, vrsta_traga, nacin_uzorkovanja, uslovi_cuvanja, kolicina) VALUES
+(1, 'Krv', 'Bris sterilnim štapićem', 'Rashladni uslovi, 4°C', '2 ml'),
+(6, 'Dlaka', 'Pinceta + papirna koverta', 'Suvo, sobna temperatura', '5 komada'),
+(9, 'Krv', 'Bris sterilnim štapićem', 'Rashladni uslovi, 4°C', '1.5 ml');
+
+INSERT INTO oruzje (id_dokaz, vrsta_oruzja, marka, model, kalibar, serijski_br) VALUES
+(2, 'Pištolj', 'Zastava', 'CZ 99', '9mm', 'CZ-2019-45892'),
+(5, 'Nož', 'Nepoznata', 'Kuhinjski', 'N/A', NULL),
+(8, 'Municija', 'Nepoznata', 'Čaura', '9mm', NULL);
+
+INSERT INTO dokument_dokaz (id_dokaz, vrsta_dokumenta, jezik, broj_stranica) VALUES
+(3, 'Faktura', 'Srpski', 2),
+(11, 'Email prepiska', 'Srpski', 28),
+(14, 'Medicinski izveštaj', 'Srpski', 3);
+
+INSERT INTO uzorak (id_dokaz, vrsta_uzorka, kolicina, jedinica_mere, nacin_uzorkovanja, uslovi_cuvanja) VALUES
+(4, 'Tekstilna vlakna', '15', 'komada', 'Pinceta + papirna koverta', 'Suvo, sobna temperatura'),
+(7, 'Otisci prstiju', '3', 'komada', 'Prašak + folija', 'Suvo, sobna temperatura'),
+(10, 'Digitalni medij', '1', 'komad', 'Zaplenjen u kesi za dokaze', 'Suvo, antistatik zaštita'),
+(12, 'Tekstilno vlakno', '1', 'komad', 'Pinceta + papirna koverta', 'Suvo, sobna temperatura'),
+(13, 'Video zapis', '1', 'fajl', 'Kopija sa SD kartice nadzorne kamere', 'Digitalni arhiv, enkriptovano'),
+(15, 'Audio zapis', '1', 'fajl', 'Kopija sa telefona žrtve', 'Digitalni arhiv, enkriptovano');
+
+-- ─── Lanac čuvanja ──────────────────────────────────────────────────────────
+INSERT INTO lanac_cuvanja (akcija, datum_vreme, napomena, dokaz_id, tehnicar_id) VALUES
+('Prijem dokaza',   '2026-01-16 10:00:00', 'Dokaz zaprimljen u skladište',       1, 3),
+('Skladištenje',    '2026-01-16 10:15:00', 'Smešten u sef A-12',                 1, 3),
+('Prijem dokaza',   '2026-02-11 08:00:00', 'Dokaz zaprimljen u skladište',       2, 3),
+('Izdavanje dokaza','2026-02-12 09:00:00', 'Izdato za balističku analizu',       2, 3),
+('Prijem dokaza',   '2026-03-21 09:00:00', 'Dokaz zaprimljen u skladište',       3, 3),
+('Prijem dokaza',   '2026-02-12 11:00:00', 'Dokaz zaprimljen u skladište',       4, 3),
+('Skladištenje',    '2026-02-12 11:20:00', 'Smešten u sef B-05',                 4, 3),
+('Prijem dokaza',   '2026-04-20 14:00:00', 'Dokaz zaprimljen u skladište',       5, 3),
+('Povraćaj dokaza', '2026-04-22 10:00:00', 'Vraćen bez prethodnog izdavanja — greška u evidenciji', 5, 3),
+-- Lanac čuvanja za nove dokaze (6–11)
+('Prijem dokaza',   '2026-01-17 09:00:00', 'Dokaz zaprimljen u skladište', 6, 3),
+('Skladištenje',    '2026-01-17 09:15:00', 'Smešten u sef A-14',          6, 3),
+('Prijem dokaza',   '2026-01-17 10:30:00', 'Dokaz zaprimljen u skladište', 7, 3),
+('Skladištenje',    '2026-01-17 10:45:00', 'Smešten u sef A-15',          7, 3),
+('Prijem dokaza',   '2026-02-11 09:00:00', 'Dokaz zaprimljen u skladište', 8, 3),
+('Skladištenje',    '2026-02-11 09:15:00', 'Smešten u sef B-06',          8, 3),
+('Prijem dokaza',   '2026-02-11 10:00:00', 'Dokaz zaprimljen u skladište', 9, 3),
+('Skladištenje',    '2026-02-11 10:20:00', 'Smešten u sef B-07',          9, 3),
+('Prijem dokaza',   '2026-01-22 08:00:00', 'Dokaz zaprimljen u skladište', 10, 3),
+('Skladištenje',    '2026-01-22 08:20:00', 'Smešten u sef E-01',          10, 3),
+('Prijem dokaza',   '2026-01-22 09:00:00', 'Dokaz zaprimljen u skladište', 11, 3),
+('Skladištenje',    '2026-01-22 09:15:00', 'Smešten u sef E-02',          11, 3),
+-- Dokaz 12 — pokvaren lanac čuvanja (Povraćaj bez prethodnog Izdavanja → kompromitovanje pri verifikaciji)
+('Prijem dokaza',   '2026-01-18 11:00:00', 'Dokaz zaprimljen u skladište',                          12, 3),
+('Skladištenje',    '2026-01-18 11:15:00', 'Smešten u sef A-16',                                    12, 3),
+('Povraćaj dokaza', '2026-01-20 09:00:00', 'Vraćen bez prethodnog izdavanja — greška u evidenciji', 12, 3),
+-- Dokazi 13 i 14 — predmet 9, izdati za analizu
+('Prijem dokaza',    '2026-04-19 08:00:00', 'Dokaz zaprimljen u skladište',    13, 3),
+('Skladištenje',     '2026-04-19 08:15:00', 'Smešten u digitalni arhiv D-01',  13, 3),
+('Izdavanje dokaza', '2026-04-19 09:00:00', 'Izdato na digitalnu analizu',     13, 3),
+('Prijem dokaza',    '2026-04-19 10:00:00', 'Dokaz zaprimljen u skladište',    14, 3),
+('Skladištenje',     '2026-04-19 10:15:00', 'Smešten u sef F-01',              14, 3),
+('Izdavanje dokaza', '2026-04-19 11:00:00', 'Izdato veštaku na analizu',       14, 3),
+-- Dokaz 15 — predmet 19, izdat i analiza završena
+('Prijem dokaza',    '2026-03-26 09:00:00', 'Dokaz zaprimljen u skladište',    15, 3),
+('Skladištenje',     '2026-03-26 09:15:00', 'Smešten u digitalni arhiv D-02',  15, 3),
+('Izdavanje dokaza', '2026-03-26 10:00:00', 'Izdato veštaku na analizu',       15, 3);
+
+-- ─── Zahtev za dokaz ────────────────────────────────────────────────────────
+INSERT INTO zahtev_za_dokaz (tip, razlog, status, datum_kreiranja, dokaz_id, podnosilac_id) VALUES
+('PREDAJA', 'Potrebna balistička analiza pištolja', 'ODOBREN', '2026-02-12 08:30:00', 2, 2),
+('POVRACAJ', 'Analiza završena, vraćanje dokaza u skladište', 'NA_CEKANJU', '2026-02-20 14:00:00', 2, 2);
+
+-- ─── Zahtev za analizu ──────────────────────────────────────────────────────
+INSERT INTO zahtev_za_analizu (opis, tip_analize, datum_kreiranja, datum_pocetka, rok, status, istrazitelj_id, dokaz_id, predmet_id, vestak_id) VALUES
+('Balistička analiza pištolja CZ 99 — utvrditi da li je oružje korišćeno u zločinu', 'BALISTICKA', '2026-02-12 10:00:00', '2026-02-13 08:00:00', '2026-03-01 00:00:00', 'U_TOKU',  2, 2,  2, 4),
+('DNK analiza krvi sa mesta zločina',                                                  'DNK',        '2026-01-17 09:00:00', NULL,                   '2026-02-15 00:00:00', 'KREIRAN', 2, 1,  1, NULL),
+('Digitalna analiza video zapisa sa nadzorne kamere radi identifikacije napadača',     'DIGITALNA',  '2026-04-20 09:00:00', NULL,                   '2026-05-15 00:00:00', 'KREIRAN', 2, 13, 9, NULL),
+-- Zahtev 4 — predmet 19, analiza ZAVRSENA (omogućava prelaz u DONOSENJE_ZAKLJUCKA)
+('Analiza audio zapisa radi identifikacije glasa osumnjičenog i utvrđivanja sadržaja pretnji', 'DIGITALNA', '2026-03-26 10:30:00', '2026-03-27 08:00:00', '2026-04-10 00:00:00', 'ZAVRSEN', 2, 15, 19, 4);
+
+-- ─── Istorija statusa analize ───────────────────────────────────────────────
+INSERT INTO istorija_statusa_analize (stari_status, novi_status, datum_vreme, napomena, zahtev_id, inicirao_id) VALUES
+(NULL,       'KREIRAN',  '2026-02-12 10:00:00', 'Zahtev kreiran',         1, 2),
+('KREIRAN',  'DODELJEN', '2026-02-12 10:30:00', 'Dodeljen veštaku',       1, 2),
+('DODELJEN', 'U_TOKU',   '2026-02-13 08:00:00', 'Veštak započeo analizu', 1, 4),
+(NULL,       'KREIRAN',  '2026-01-17 09:00:00', 'Zahtev kreiran',         2, 2),
+(NULL,       'KREIRAN',  '2026-04-20 09:00:00', 'Zahtev kreiran',         3, 2),
+(NULL,       'KREIRAN',  '2026-03-26 10:30:00', 'Zahtev kreiran',         4, 2),
+('KREIRAN',  'DODELJEN', '2026-03-26 11:00:00', 'Dodeljen veštaku',       4, 2),
+('DODELJEN', 'U_TOKU',   '2026-03-27 08:00:00', 'Veštak započeo analizu', 4, 4),
+('U_TOKU',   'ZAVRSEN',  '2026-04-02 15:00:00', 'Analiza završena, rezultati dostavljeni', 4, 4);
+
+-- ─── Istorija dodele ────────────────────────────────────────────────────────
+INSERT INTO istorija_dodele (datum_dodele, razlog_promene, zahtev_id, vestak_id, dodelio_id) VALUES
+('2026-02-12 10:30:00', NULL, 1, 4, 2),
+('2026-03-26 11:00:00', NULL, 4, 4, 2);
+
+-- ─── Rezultat analize ───────────────────────────────────────────────────────
+INSERT INTO rezultat_analize (sadrzaj, datum_unosa, verifikovan, zahtev_id, uneao_id) VALUES
+('Analiza audio zapisa potvrdila je podudarnost glasa sa osumnjičenim sa preciznošću od 94%. Identifikovane su tri jasne pretnje upućene žrtvi u periodu od dve nedelje.', '2026-04-02 15:00:00', 1, 4, 4);
+
+-- ─── Istorija faza predmeta ─────────────────────────────────────────────────
+-- Predmet 1 (ANALIZA_DOKAZA, otvoren 2026-01-14)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-01-14 09:00:00', 1, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-01-15 10:00:00', 1, 2),
+('ANALIZA_DOKAZA',      '2026-01-20 08:30:00', 1, 2);
+
+-- Predmet 2 (ANALIZA_DOKAZA, otvoren 2026-02-10)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-02-10 14:30:00', 2, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-02-11 09:00:00', 2, 2),
+('ANALIZA_DOKAZA',      '2026-02-18 11:00:00', 2, 2);
+
+-- Predmet 3 (DONOSENJE_ZAKLJUCKA, otvoren 2026-01-28)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-01-28 11:00:00', 3, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-01-30 09:00:00', 3, 2),
+('ANALIZA_DOKAZA',      '2026-02-08 10:00:00', 3, 2),
+('DONOSENJE_ZAKLJUCKA', '2026-02-25 14:00:00', 3, 2);
+
+-- Predmet 4 (OTVOREN_SLUCAJ, otvoren 2026-03-02)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ', '2026-03-02 09:00:00', 4, 2);
+
+-- Predmet 5 (PRIKUPLJANJE_DOKAZA, otvoren 2026-02-10)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-02-10 10:00:00', 5, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-02-13 09:00:00', 5, 2);
+
+-- Predmet 6 (ANALIZA_DOKAZA, otvoren 2026-01-20)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-01-20 08:00:00', 6, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-01-22 10:00:00', 6, 2),
+('ANALIZA_DOKAZA',      '2026-02-01 09:00:00', 6, 2);
+
+-- Predmet 7 (DONOSENJE_ZAKLJUCKA, otvoren 2025-11-05)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2025-11-05 09:00:00', 7, 2),
+('PRIKUPLJANJE_DOKAZA', '2025-11-10 09:00:00', 7, 2),
+('ANALIZA_DOKAZA',      '2025-12-01 10:00:00', 7, 2),
+('DONOSENJE_ZAKLJUCKA', '2025-12-20 14:00:00', 7, 2);
+
+-- Predmet 8 (ZATVOREN_SLUCAJ, otvoren 2025-09-14)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2025-09-14 09:00:00', 8, 2),
+('PRIKUPLJANJE_DOKAZA', '2025-09-18 10:00:00', 8, 2),
+('ANALIZA_DOKAZA',      '2025-10-05 09:00:00', 8, 2),
+('DONOSENJE_ZAKLJUCKA', '2025-10-22 11:00:00', 8, 2),
+('ZATVOREN_SLUCAJ',     '2025-11-10 15:00:00', 8, 2);
+
+-- Predmet 9 (PRIKUPLJANJE_DOKAZA, otvoren 2026-04-18)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-04-18 09:00:00', 9, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-04-19 10:00:00', 9, 2);
+
+-- Predmet 10 (ZATVOREN_SLUCAJ, otvoren 2026-03-16)
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-03-16 09:00:00', 10, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-03-20 10:00:00', 10, 2),
+('ANALIZA_DOKAZA',      '2026-04-02 09:00:00', 10, 2),
+('DONOSENJE_ZAKLJUCKA', '2026-04-15 11:00:00', 10, 2),
+('ZATVOREN_SLUCAJ',     '2026-04-28 16:00:00', 10, 2);
+
+-- Stefan (id=5): predmeti 11, 12, 13
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-03-10 09:00:00', 11, 5),
+('PRIKUPLJANJE_DOKAZA', '2026-03-12 10:00:00', 11, 5);
+
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-02-01 10:00:00', 12, 5),
+('PRIKUPLJANJE_DOKAZA', '2026-02-05 09:00:00', 12, 5),
+('ANALIZA_DOKAZA',      '2026-02-14 11:00:00', 12, 5);
+
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2025-10-15 09:00:00', 13, 5),
+('PRIKUPLJANJE_DOKAZA', '2025-10-20 10:00:00', 13, 5),
+('ANALIZA_DOKAZA',      '2025-11-01 09:00:00', 13, 5),
+('DONOSENJE_ZAKLJUCKA', '2025-11-18 14:00:00', 13, 5),
+('ZATVOREN_SLUCAJ',     '2025-12-05 15:00:00', 13, 5);
+
+-- Milica (id=6): predmeti 14, 15, 16
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ', '2026-05-20 09:00:00', 14, 6);
+
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-01-08 08:00:00', 15, 6),
+('PRIKUPLJANJE_DOKAZA', '2026-01-12 09:00:00', 15, 6),
+('ANALIZA_DOKAZA',      '2026-01-25 10:00:00', 15, 6),
+('DONOSENJE_ZAKLJUCKA', '2026-02-10 14:00:00', 15, 6);
+
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2025-08-12 09:00:00', 16, 6),
+('PRIKUPLJANJE_DOKAZA', '2025-08-18 10:00:00', 16, 6),
+('ANALIZA_DOKAZA',      '2025-09-01 09:00:00', 16, 6),
+('DONOSENJE_ZAKLJUCKA', '2025-09-20 11:00:00', 16, 6),
+('ZATVOREN_SLUCAJ',     '2025-10-10 16:00:00', 16, 6);
+
+-- Nikola (id=7): predmeti 17, 18
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-04-05 09:00:00', 17, 7),
+('PRIKUPLJANJE_DOKAZA', '2026-04-08 10:00:00', 17, 7);
+
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2025-12-01 09:00:00', 18, 7),
+('PRIKUPLJANJE_DOKAZA', '2025-12-08 10:00:00', 18, 7),
+('ANALIZA_DOKAZA',      '2025-12-22 09:00:00', 18, 7),
+('DONOSENJE_ZAKLJUCKA', '2026-01-05 11:00:00', 18, 7),
+('ZATVOREN_SLUCAJ',     '2026-01-20 15:00:00', 18, 7);
+
+-- Predmet 19 (ANALIZA_DOKAZA, otvoren 2026-03-25) — spreman za DONOSENJE_ZAKLJUCKA
+INSERT INTO istorija_faze_predmeta (faza, datum_vreme, predmet_id, korisnik_id) VALUES
+('OTVOREN_SLUCAJ',      '2026-03-25 09:00:00', 19, 2),
+('PRIKUPLJANJE_DOKAZA', '2026-03-26 08:30:00', 19, 2),
+('ANALIZA_DOKAZA',      '2026-03-27 09:00:00', 19, 2);
+
+-- ─── Tagovi ─────────────────────────────────────────────────────────────────
+INSERT INTO tag (naziv, boja) VALUES
+('Hitno',           '#EF4444'),
+('DNK',             '#3B82F6'),
+('Balistika',       '#F97316'),
+('Finansije',       '#22C55E'),
+('Vatreno oruzje',  '#DC2626'),
+('Hladno oruzje',   '#9333EA'),
+('Bioloski trag',   '#059669'),
+('Foto-dokaz',      '#0EA5E9'),
+('Vestacenje',      '#8B5CF6'),
+('Zapisnik',        '#6366F1'),
+('Izvestaj',        '#14B8A6'),
+('Zbirni',          '#64748B');
+
+-- ─── Obaveštenja ────────────────────────────────────────────────────────────
+INSERT INTO obavestenje (sadrzaj, procitano, tip, datum_vreme, korisnik_id, zahtev_id) VALUES
+('Dodeljena vam je balistička analiza za predmet "Ubistvo – Novi Sad"', 0, 'DODELA', '2026-02-12 10:30:00', 4, 1),
+('Zahtev za DNK analizu je kreiran za predmet "Razbojništvo – Beograd Centar"', 1, 'PROMENA_STATUSA', '2026-01-17 09:00:00', 2, 2);
