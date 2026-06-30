@@ -153,6 +153,26 @@ if ($page === 'predmet-detalji' && $action === 'sledeca-faza') {
 
         if ($brDokaza === 0) {
             $greske[] = 'Predmet mora imati bar jedan dokaz.';
+        } else {
+            $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM dokaz WHERE predmet_id = ? AND status != 'IZDATO_ZA_ANALIZU'");
+            $stmt->bind_param('i', $predmetId);
+            $stmt->execute();
+            $nisuSpremni = (int)$stmt->get_result()->fetch_assoc()['cnt'];
+            $stmt->close();
+
+            if ($nisuSpremni > 0) {
+                $greske[] = "Svi dokazi moraju biti u statusu 'Izdato za analizu' ({$nisuSpremni} " . ($nisuSpremni === 1 ? 'nije' : 'nisu') . " u ispravnom statusu).";
+            }
+        }
+
+        $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM zahtev_za_analizu WHERE predmet_id = ?");
+        $stmt->bind_param('i', $predmetId);
+        $stmt->execute();
+        $brZahteva = (int)$stmt->get_result()->fetch_assoc()['cnt'];
+        $stmt->close();
+
+        if ($brZahteva === 0) {
+            $greske[] = 'Mora postojati zahtev za analizu.';
         }
     }
 

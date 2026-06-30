@@ -78,7 +78,7 @@ while ($t = $sviTagoviRes->fetch_assoc()) {
             <!-- Predloženi tagovi (poluautomatsko obelezavanje) -->
             <div id="predlozeni-tagovi-sekcija" class="form-group full" style="display:none;">
                 <label>Predloženi tagovi</label>
-                <p style="color:var(--text-3); font-size:12px; margin-bottom:8px;">Sistem predlaže tagove na osnovu tipa dokumenta i opisa. Označite koje želite da dodate.</p>
+                <p style="color:var(--text-3); font-size:12px; margin-bottom:8px;">Sistem predlaže tagove na osnovu tipa dokumenta, opisa i sadržaja PDF-a. Označite koje želite da dodate.</p>
                 <div id="predlozeni-tagovi-lista" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
             </div>
 
@@ -90,6 +90,7 @@ while ($t = $sviTagoviRes->fetch_assoc()) {
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 (function() {
     // Tagovi iz baze
@@ -123,8 +124,11 @@ while ($t = $sviTagoviRes->fetch_assoc()) {
 
     var tipSelect = document.querySelector('select[name="tip_dokumenta"]');
     var opisTextarea = document.querySelector('textarea[name="opis"]');
+    var fajlInput = document.querySelector('input[name="fajl"]');
     var sekcija = document.getElementById('predlozeni-tagovi-sekcija');
     var lista = document.getElementById('predlozeni-tagovi-lista');
+
+    var tagoviIzPdf = [];
 
     function nadjiPredlozene() {
         var predlozeniNazivi = {};
@@ -145,13 +149,15 @@ while ($t = $sviTagoviRes->fetch_assoc()) {
             }
         }
 
+        // Po sadrzaju PDF-a
+        tagoviIzPdf.forEach(function(n) { predlozeniNazivi[n] = true; });
+
         return Object.keys(predlozeniNazivi);
     }
 
     function azurirajPredloge() {
         var predlozeniNazivi = nadjiPredlozene();
 
-        // Filtriraj samo tagove koji postoje u bazi
         var predlozeniTagovi = sviTagovi.filter(function(t) {
             return predlozeniNazivi.indexOf(t.naziv) !== -1;
         });
@@ -181,10 +187,47 @@ while ($t = $sviTagoviRes->fetch_assoc()) {
         });
     }
 
+    fajlInput.addEventListener('change', function() {
+        var file = fajlInput.files[0];
+        if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+            tagoviIzPdf = [];
+            azurirajPredloge();
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function() {
+            pdfjsLib.getDocument({data: new Uint8Array(reader.result)}).promise.then(function(pdf) {
+                var promises = [];
+                for (var i = 1; i <= pdf.numPages; i++) {
+                    promises.push(pdf.getPage(i).then(function(page) {
+                        return page.getTextContent().then(function(content) {
+                            return content.items.map(function(item) { return item.str; }).join(' ');
+                        });
+                    }));
+                }
+                return Promise.all(promises);
+            }).then(function(pages) {
+                var tekst = pages.join(' ').toLowerCase();
+                var nadjeni = {};
+                for (var kljuc in mapaPoOpisu) {
+                    if (tekst.indexOf(kljuc) !== -1) {
+                        nadjeni[mapaPoOpisu[kljuc]] = true;
+                    }
+                }
+                tagoviIzPdf = Object.keys(nadjeni);
+                azurirajPredloge();
+            }).catch(function() {
+                tagoviIzPdf = [];
+                azurirajPredloge();
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
     tipSelect.addEventListener('change', azurirajPredloge);
     opisTextarea.addEventListener('input', azurirajPredloge);
 
-    // Inicijalno pokretanje
     azurirajPredloge();
 })();
 </script>

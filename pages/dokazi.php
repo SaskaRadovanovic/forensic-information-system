@@ -7,6 +7,7 @@
  */
 
 // ─── Čitanje filtera iz GET parametara ──────────────────────────────────────
+$filterNaziv    = $_GET['naziv'] ?? '';
 $filterTip      = $_GET['tip_dokaza'] ?? '';
 $filterStatus   = $_GET['status'] ?? '';
 $filterPredmet  = (int)($_GET['predmet_id'] ?? 0);
@@ -27,6 +28,12 @@ $sql = "
 
 $params = [];
 $types  = '';
+
+if ($filterNaziv !== '') {
+    $sql .= " AND d.naziv LIKE ?";
+    $params[] = '%' . $filterNaziv . '%';
+    $types .= 's';
+}
 
 if ($filterTip !== '') {
     $sql .= " AND d.tip_dokaza = ?";
@@ -80,6 +87,11 @@ $predmetiRes = $conn->query("SELECT id, naziv FROM predmet ORDER BY naziv");
         <input type="hidden" name="page" value="dokazi">
 
         <div class="form-group" style="margin-bottom:0;">
+            <label>Pretraga po nazivu</label>
+            <input type="text" name="naziv" value="<?= e($filterNaziv) ?>" placeholder="Unesite naziv dokaza..." onchange="this.form.submit()">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
             <label>Tip dokaza</label>
             <select name="tip_dokaza" onchange="this.form.submit()">
                 <option value="">Svi tipovi</option>
@@ -111,12 +123,12 @@ $predmetiRes = $conn->query("SELECT id, naziv FROM predmet ORDER BY naziv");
 
         <div class="form-group" style="margin-bottom:0;">
             <label>Datum od</label>
-            <input type="date" name="datum_od" value="<?= e($filterDatumOd) ?>" onchange="this.form.submit()">
+            <input type="date" name="datum_od" value="<?= e($filterDatumOd) ?>" max="<?= date('Y-m-d') ?>" onchange="this.form.submit()">
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
             <label>Datum do</label>
-            <input type="date" name="datum_do" value="<?= e($filterDatumDo) ?>" onchange="this.form.submit()">
+            <input type="date" name="datum_do" value="<?= e($filterDatumDo) ?>" max="<?= date('Y-m-d') ?>" onchange="this.form.submit()">
         </div>
 
         <div style="margin-left:auto;">

@@ -27,9 +27,11 @@ $dozvoljeneStranice = [
     'analize', 'analiza-detalji', 'analiza-nova', 'analiza-izmeni',
     'analiza-dodela', 'analiza-rezultat',
     'obavestenja',
-    'izvestaji',
+    'izvestaj-analize',
+    'analitika',
     'istorija-predmeta',
     'korisnik-novi',
+    'izvestaj-dokumentacije',
 ];
 
 // Ako stranica nije u whitelist-u, prikaži 404
@@ -87,6 +89,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($actionMapa[$page])) {
         require __DIR__ . '/' . $actionMapa[$page];
     }
+    exit;
+}
+
+// ─── PDF izveštaji — GET zahtev bez layouta (direktan download) ─────────────
+if (in_array($action, ['izvestaj-dokaz', 'zbirni-izvestaj'])) {
+    require __DIR__ . '/actions/izvestaji-actions.php';
+    exit;
+}
+
+if ($action === 'izvestaj-analize-pdf') {
+    require __DIR__ . '/actions/izvestaj-analize-export.php';
+    exit;
+}
+
+if ($action === 'izvestaj-dokumentacije-pdf') {
+    require __DIR__ . '/actions/izvestaj-dokumentacije-export.php';
     exit;
 }
 

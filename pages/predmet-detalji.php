@@ -364,6 +364,9 @@ $trenutniIndex = array_search($predmet['faza'], $faze);
 
 <!-- Dugmad -->
 <div class="action-bar">
+    <?php if (in_array($_SESSION['uloga'], ['TEHNICAR', 'ISTRAZITELJ', 'ADMINISTRATOR']) && $brDokaza > 0): ?>
+    <a href="?page=predmet-detalji&id=<?= $predmetId ?>&action=zbirni-izvestaj" class="btn btn-outline" target="_blank">Zbirni izveštaj</a>
+    <?php endif; ?>
     <?php if ($predmet['status'] === 'AKTIVAN'): ?>
         <?php if ($mozeMenjaFazu && $trenutniIndex < count($faze) - 1): ?>
         <form method="POST" action="?page=predmet-detalji&id=<?= $predmetId ?>&action=sledeca-faza" style="display:inline;">

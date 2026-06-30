@@ -233,7 +233,7 @@ $lanac = $stmt->get_result();
         </div>
         <div class="modal-footer">
             <button class="btn btn-ghost" onclick="document.getElementById('modal-verifikacija').style.display='none'">ZATVORI</button>
-            <button class="btn btn-primary" disabled title="Funkcionalnost planirana za sledeći sprint">GENERIŠI IZVEŠTAJ O INTEGRITETU</button>
+            <a href="?page=dokaz-detalji&id=<?= $dokazId ?>&action=izvestaj-dokaz" class="btn btn-primary" target="_blank">GENERIŠI IZVEŠTAJ O INTEGRITETU</a>
         </div>
     </div>
 </div>

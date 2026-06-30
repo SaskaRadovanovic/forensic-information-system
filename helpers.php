@@ -145,6 +145,24 @@ function nivoPoverljivostiBadge(string $nivo): string
     return $mapa[$nivo] ?? 'badge-gray';
 }
 
+// ─── Ekstrakcija teksta iz PDF-a ────────────────────────────────────────────
+
+function ekstrahujTekstIzPdf(string $putanjaDoFajla): string
+{
+    if (!file_exists($putanjaDoFajla)) return '';
+
+    $ext = strtolower(pathinfo($putanjaDoFajla, PATHINFO_EXTENSION));
+    if ($ext !== 'pdf') return '';
+
+    try {
+        $parser = new \Smalot\PdfParser\Parser();
+        $pdf = $parser->parseFile($putanjaDoFajla);
+        return $pdf->getText();
+    } catch (\Exception $e) {
+        return '';
+    }
+}
+
 // ─── Poluautomatsko predlaganje tagova ──────────────────────────────────────
 
 /** Mapiranje tip dokumenta → nazivi predloženih tagova */
@@ -207,12 +225,13 @@ function predloziTagovePoOpisu(string $opis): array
     return array_keys($predlozeni);
 }
 
-/** Kombinuje predloge iz tipa i opisa, vraca unikatne nazive tagova */
-function sviPredlozeniTagovi(string $tipDokumenta, string $opis): array
+/** Kombinuje predloge iz tipa, opisa i sadrzaja PDF-a, vraca unikatne nazive tagova */
+function sviPredlozeniTagovi(string $tipDokumenta, string $opis, string $sadrzajTekst = ''): array
 {
     $poTipu = predloziTagovePoTipu($tipDokumenta);
     $poOpisu = predloziTagovePoOpisu($opis);
-    return array_unique(array_merge($poTipu, $poOpisu));
+    $poSadrzaju = ($sadrzajTekst !== '') ? predloziTagovePoOpisu($sadrzajTekst) : [];
+    return array_unique(array_merge($poTipu, $poOpisu, $poSadrzaju));
 }
 
 // ─── Labele za tip dokaza ───────────────────────────────────────────────────

@@ -734,7 +734,9 @@ if ($uloga === 'ADMINISTRATOR'):
     <div class="sidebar-section">Administracija</div>
     <a href="?page=dashboard" class="nav-item <?= $page === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
     <a href="?page=korisnik-novi" class="nav-item <?= $page === 'korisnik-novi' ? 'active' : '' ?>">Novi korisnik</a>
-    <a href="?page=izvestaji" class="nav-item <?= $page === 'izvestaji' ? 'active' : '' ?>">Izveštaji</a>
+    <a href="?page=izvestaj-analize" class="nav-item <?= $page === 'izvestaj-analize' ? 'active' : '' ?>">Izveštaj analiza</a>
+    <a href="?page=izvestaj-dokumentacije" class="nav-item <?= $page === 'izvestaj-dokumentacije' ? 'active' : '' ?>">Izveštaj dokumentacije</a>
+    <a href="?page=analitika" class="nav-item <?= $page === 'analitika' ? 'active' : '' ?>">Analitika</a>
 
     <div class="sidebar-section">Predmeti</div>
     <a href="?page=predmeti" class="nav-item <?= $page === 'predmeti' || strpos($page, 'predmet-') === 0 ? 'active' : '' ?>">Predmeti</a>
@@ -753,11 +755,16 @@ if ($uloga === 'ADMINISTRATOR'):
     <div class="sidebar-section">Istraga</div>
     <a href="?page=dashboard" class="nav-item <?= $page === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
     <a href="?page=predmeti" class="nav-item <?= $page === 'predmeti' || strpos($page, 'predmet-') === 0 ? 'active' : '' ?>">Predmeti</a>
+    <a href="?page=analitika" class="nav-item <?= $page === 'analitika' ? 'active' : '' ?>">Analitika</a>
 
     <div class="sidebar-section">Forenzika</div>
     <a href="?page=analize" class="nav-item <?= $page === 'analize' || strpos($page, 'analiza-') === 0 ? 'active' : '' ?>">Analize</a>
     <a href="?page=dokumentacija" class="nav-item <?= $page === 'dokumentacija' || strpos($page, 'dokument-') === 0 ? 'active' : '' ?>">Dokumentacija</a>
     <a href="?page=dokazi" class="nav-item <?= $page === 'dokazi' || strpos($page, 'dokaz-') === 0 ? 'active' : '' ?>">Dokazi</a>
+
+    <div class="sidebar-section">Izveštaji</div>
+    <a href="?page=izvestaj-analize" class="nav-item <?= $page === 'izvestaj-analize' ? 'active' : '' ?>">Izveštaj analiza</a>
+    <a href="?page=izvestaj-dokumentacije" class="nav-item <?= $page === 'izvestaj-dokumentacije' ? 'active' : '' ?>">Izveštaj dokumentacije</a>
 
     <div class="sidebar-section">Sistem</div>
     <a href="?page=obavestenja" class="nav-item <?= $page === 'obavestenja' ? 'active' : '' ?>">Obaveštenja<?php if ($neprocitanaBroj > 0): ?> <span class="nav-badge"><?= $neprocitanaBroj ?></span><?php endif; ?></a>
